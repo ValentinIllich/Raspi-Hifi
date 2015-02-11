@@ -1,0 +1,7 @@
+.DS_Store
+Raspi-Hifi-V1.app
+raspilcd
+makefile.org
+*.o
+Makefile
+Raspi-Hifi-V1
