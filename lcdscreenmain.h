@@ -1,3 +1,11 @@
+// Filename:    lcdmainscreen.h
+// Description: main screen and user input for record and play
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #ifndef LCDSCREENMAIN_H
 #define LCDSCREENMAIN_H
 
@@ -10,8 +18,8 @@ public:
   virtual ~lcdscreenmain();
 
 protected:
-  virtual void secTimer(struct tm *result);
-  virtual int keyEventHandler( keyType key );
+  virtual keyType secTimer(struct tm *result);
+  virtual keyType keyEventHandler( keyType key );
 
 private:
   void startRecording();

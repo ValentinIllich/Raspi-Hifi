@@ -1,4 +1,10 @@
-//=== Includes =====================================================================================
+// Filename:    main.cpp
+// Description: main program for Raspi Hifi machine
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
 
 #include <stdio.h>
 #include <string.h>
@@ -24,6 +30,10 @@ extern "C"
 
 #include "lcdscreenmain.h"
 
+#ifdef  QT_EMULATION
+#include "QtEmulation.h"
+#endif
+
 //=== Preprocessing directives (#define) ===========================================================
 
 //=== Type definitions (typedef) ===================================================================
@@ -36,15 +46,12 @@ extern "C"
 
 #include <signal.h>
 
-#include "bmp_raspi.inc"
 #include "bmp_men.inc"
 
 //=== Local variables ==============================================================================
 
 uint16  DemoCount;
 uint8	DemoView;
-char	TempString[32];
-uint16	DemoMem[256];
 
 //=== Local function prototypes ====================================================================
 
@@ -55,18 +62,6 @@ uint16	DemoMem[256];
 // Parameter: 
 // Return:    
 //--------------------------------------------------------------------------------------------------
-void DemoLogo(void)
-{
-	LCD_ClearScreen();
-	LCD_DrawBitmap(0,0,bmp_raspi);		
-	LCD_SetFont(0);	
-	LCD_PrintXY(70,4 ,"Raspi-LCD");		
-	LCD_PrintXY(75,14,"Project");
-	LCD_PrintXY(68,32,"powered by");
-	LCD_PrintXY(70,42,"Emsystech");
-	LCD_PrintXY(62,52,"Engineering");
-}
-
 void DemoText(void)
 {	
   LCD_ClearScreen();
@@ -100,75 +95,9 @@ void DemoVector(void)
 	LCD_DrawRect(30,50,60,60,1);
 }
 
-void LogCpuTemperature(void)
-{
-  FILE *fp;
-	unsigned int temp;
-	uint16 i;
-			
-	TempString[0] = 0;
-	
-	fp = fopen("/sys/class/thermal/thermal_zone0/temp", "r");		// open as file
-	if(fp != NULL)
-	{	
-		fgets(TempString,32,fp);			// get line
-		fclose(fp);
-	}
-	
-	temp = 0;
-	if(TempString[0])
-	{
-		TempString[3]=0;	// end at 1/10 C
-		sscanf(TempString,"%u",&temp);
-//		printf("%u\r\n",temp);
-    TempString[3]=TempString[2]; TempString[2]='.'; TempString[4]='?'; TempString[5]='C'; TempString[6]=0;
-	}
-	
-	for(i=126;i>0;i--)  DemoMem[i+1] = DemoMem[i];
-	DemoMem[1] = DemoMem[0];
-	DemoMem[0] = temp;
-}	
-
-void DemoCpuTemperature(void)
-{
-  uint16	i,y;
-	
-	LCD_ClearScreen();
-	LCD_SetPenColor(1);
-	LCD_SetFont(1);
-	LCD_PrintXY(40,0,"CPU:");
-	LCD_PrintXY(80,0,TempString);
-		
-	LCD_SetFont(0);
-	LCD_PrintXY(0,0, "60-");
-	LCD_PrintXY(0,18,"50-");
-	LCD_PrintXY(0,37,"40-");
-	LCD_PrintXY(0,56,"30-");
-	LCD_DrawLine(15,0,15,63);
-
-	for(i=16;i<128;i++)
-	{
-		y = DemoMem[127-i];
-		
-		if(y > 290) 
-		{
-			y = ((y - 290) / 5);
-			y = 64 - y;
-			LCD_PutPixel(i,y,1);
-			LCD_PutPixel(i,y+1,1);
-		}
-	}
-}
-
-void DemoCpuTemperatureInit(void)
-{
-	uint8 i;
-	for(i=0;i<128;i++)  DemoMem[i] = 0;
-}
-
 void DemoBubbles(void)
 {
-  LCD_ClearScreen();
+/*  LCD_ClearScreen();
 	LCD_SetPenColor(1);
 	
 	if(DemoMem[200])	{ if(DemoMem[201] > 16)	DemoMem[201]--; else	DemoMem[200] = 0;	}
@@ -187,32 +116,17 @@ void DemoBubbles(void)
 		else		{ if(DemoMem[207] <54)	DemoMem[207]++; else	DemoMem[206] = 1;	}
 	DemoMem[208] = ((63 - DemoMem[207]) < DemoMem[207]) ? (63 - DemoMem[207]) : DemoMem[207];	
 	DemoMem[208] = (DemoMem[208] > 15) ? 15 : DemoMem[208];	
-	LCD_DrawEllipse(102,DemoMem[207],15+20-DemoMem[208],DemoMem[208]);	
+  LCD_DrawEllipse(102,DemoMem[207],15+20-DemoMem[208],DemoMem[208]);	*/
 }
 
 void DemoBubblesInit(void)
 {
-	DemoMem[200] = 1;
+/*	DemoMem[200] = 1;
 	DemoMem[201] = 10;
 	DemoMem[203] = 0;
 	DemoMem[204] = 40;
 	DemoMem[206] = 1;
-	DemoMem[207] = 40;
-}
-
-void DemoFont(void)
-{
-  LCD_ClearScreen();
-	LCD_SetFont(0);		LCD_PrintXY(0,0, "Font 0");
-	LCD_SetFont(1);		LCD_PrintXY(0,8, "Font 1");
-	LCD_SetFont(2);		LCD_PrintXY(0,23,"Font 2");
-	LCD_SetFont(3);		LCD_PrintXY(0,39,"Font 3");
-}
-
-void DemoBitmap(void)
-{
-  LCD_DrawBitmap(0,0,bmp_men);
-	LCD_SetFont(1);		LCD_PrintXY(6,0, "Bitmap");
+  DemoMem[207] = 40;*/
 }
  
 int getch() {
@@ -263,6 +177,10 @@ void terminateHandler()
 
 int main(int argc, char **argv)
 {
+#ifdef  QT_EMULATION
+  QApplication app(argc,argv);
+#endif
+
   int Contrast;
 
   if( argc>1 )
@@ -286,15 +204,18 @@ int main(int argc, char **argv)
 		
 	if(!RaspiLcdHwInit()) { printf("RaspiLcdHwInit() failed!\r\n"); return 1; }
 	LCD_Init();			// Init Display
-	SetBacklight(1);	// Turn Backlight on
+  SetBacklight(1);	// Turn Backlight on
 	
 	DemoView = 0;
-	DemoCpuTemperatureInit();
 	DemoBubblesInit();
+  lcdscreen::activateScreen(0);
 
-  lcdscreenmain mainscreen;
-
-  lcdscreen::activateScreen(&mainscreen);
+#ifdef QT_EMULATION
+  QtEmulation_Init();
+  app.exec();
+  QtEmulation_Exit();
+  running = false;
+#endif
 
   while(running)
 	{
@@ -302,8 +223,6 @@ int main(int argc, char **argv)
     SleepMs(100); // Raspi B Rev. 2: this is about 16-17 times a second with drawing, 19-20 without...
 		UpdateButtons();
 
-    if( (DemoCount % 20) == 0 ) LogCpuTemperature();
-		
     if(Button) printf("Buttons: %02X (%02X) Contrast=%i\r\n",Button,ButtonPressed,Contrast);
 
     lcdscreen::updateDisplay();
@@ -350,8 +269,9 @@ int main(int argc, char **argv)
       if(BUTTON_PRESSED_B )
       {
         printf("Button4b\n");
-        DemoView = lcdscreen::keyPressed(eKeyB);
-        if( DemoView>0 ) lcdscreen::activateScreen(0);
+        if( lcdscreen::keyPressed(eKeyB)==eKeyNext )
+            DemoView = 1;
+        if( DemoView>0 ) lcdscreen::activateScreen(-1);
       }
     }
     else
@@ -361,7 +281,7 @@ int main(int argc, char **argv)
         printf("Button5\n");
         DemoView--;
         if( DemoView == 0 )
-          lcdscreen::activateScreen(&mainscreen);
+          lcdscreen::activateScreen(0);
       }
       if(BUTTON_PRESSED_B && (DemoView < 6))
       {
@@ -370,16 +290,7 @@ int main(int argc, char **argv)
       }
     }
 	
-//		if(     DemoView == 0)	 DemoLogo();
-/*    if( DemoView == 0 )
-      lcdscreen::activateScreen(&mainscreen);
-    else
-      lcdscreen::activateScreen(0);*/
-
-    if(DemoView == 1)	 { if((DemoCount & 3) == 0) DemoCpuTemperature(); }
-		else if(DemoView == 2)  DemoBitmap();
-		else if(DemoView == 3)  DemoFont();
-		else if(DemoView == 4)	 DemoVector();
+    if(DemoView == 4)	 DemoVector();
 		else if(DemoView == 5)	 DemoBubbles();
     else if(DemoView == 6)	 DemoText();
 					

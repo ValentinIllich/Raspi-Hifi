@@ -1,3 +1,11 @@
+// Filename:    lcdmainscreen.h
+// Description: main screen and user input for record and play
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -35,6 +43,8 @@ else {
     }
  }
 
+static lcdscreenmain mainscreen;
+
 lcdscreenmain::lcdscreenmain()
   : lcdscreen(strings)
   , m_recorId(-1)
@@ -42,6 +52,7 @@ lcdscreenmain::lcdscreenmain()
   , m_startTime(-1)
 {
   strcpy(m_recordfile,"");
+  setupScreen(0,this);
 }
 
 lcdscreenmain::~lcdscreenmain()
@@ -68,7 +79,7 @@ int proc_exists(pid_t pid)
 #endif
 }
 
-void lcdscreenmain::secTimer(struct tm *result)
+keyType lcdscreenmain::secTimer(struct tm *result)
 {
   static char buffer[4096];
 
@@ -120,16 +131,19 @@ void lcdscreenmain::secTimer(struct tm *result)
   sprintf(buffer,"%02d.%02d.%04d %02d:%02d:%02d",result->tm_mday,result->tm_mon+1,result->tm_year+1900,result->tm_hour,result->tm_min,result->tm_sec);
   strings[0].text = buffer;
   repaint();
+
+  return eKeyNone;
 }
 
-int lcdscreenmain::keyEventHandler( keyType key )
+keyType lcdscreenmain::keyEventHandler( keyType key )
 {
-  int ret = 0;
+  keyType ret = eKeyNone;
 
   switch(key)
   {
   case eKeyB:
-    ret = 1;
+    //ret = eKeyNext;
+    lcdscreen::activateScreen(1);
     break;
   case eKeyUp:
     if( m_recorId>=0 )
@@ -163,7 +177,7 @@ void lcdscreenmain::startRecording()
     struct tm *result = localtime(&clock);
     sprintf(m_recordfile,"/home/pi/usbstick/%04d-%02d-%02dT%02d-%02d-%02d.wav",result->tm_year+1900,result->tm_mon+1,result->tm_mday,result->tm_hour,result->tm_min,result->tm_sec);
 
-    const char *args[] = { "/usr/bin/arecord","-f", "cd", "-Dhw:1,1", "-r", "44100", m_recordfile, NULL };
+    const char *args[] = { "/usr/bin/arecord","-f", "cd", "-Dhw:1,0", "-r", "44100", m_recordfile, NULL };
     m_recorId = spawn("/usr/bin/arecord",args);
     printf("record process id is %d\n",m_recorId);
 
@@ -192,7 +206,7 @@ void lcdscreenmain::startPlay(char *playfile)
   {
     time_t clock = time(NULL);
     struct tm *result = localtime(&clock);
-    const char *args[] = { "/usr/bin/aplay","-f", "cd", "-Dhw:1,1", "-r", "44100", playfile, NULL };
+    const char *args[] = { "/usr/bin/aplay","-f", "cd", "-Dhw:1,0", "-r", "44100", playfile, NULL };
     m_playId = spawn("/usr/bin/arecord",args);
     printf("play process id is %d\n",m_playId);
 

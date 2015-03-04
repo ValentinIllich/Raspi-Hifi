@@ -1,3 +1,11 @@
+// Filename:    raspilcd.c
+// Description: Hardware abstraction layer for Raspi-LCD
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Martin Steppuhn, www.emsystech.de
+//--------------------------------------------------------------------------------------------------
+
 //=== Includes =====================================================================================
 
 #include "std_c.h"
@@ -37,7 +45,10 @@ uint8	ButtonMem;
 //--------------------------------------------------------------------------------------------------
 int RaspiLcdHwInit(void)
 {
-	int HwRev;
+#ifdef QT_EMULATION
+return 1; // QT-Simul!
+#endif
+  int HwRev;
 	
 	HwRev = GetRaspberryHwRevision();
 	
@@ -87,7 +98,10 @@ int RaspiLcdHwInit(void)
 //--------------------------------------------------------------------------------------------------
 void UpdateButtons(void)
 {
-	ButtonMem = Button;		// Save last State
+#ifdef QT_EMULATION
+return; // QT-Simul!
+#endif
+  ButtonMem = Button;		// Save last State
 	
 	Button = 0;
 	if(!bcm2835_gpio_lev(PinButton[0])) Button |= (1<<0);
@@ -113,8 +127,11 @@ void UpdateButtons(void)
 // Return:      0=no info , 1=HW Rev.1, 2=HW Rev.2
 //--------------------------------------------------------------------------------------------------
 int GetRaspberryHwRevision(void)
-{	
-	FILE *fp;
+{
+#ifdef QT_EMULATION
+return 0; // QT-Simul!
+#endif
+  FILE *fp;
 	char line[32];
 	char s[32];
 	int i;
@@ -152,7 +169,10 @@ int GetRaspberryHwRevision(void)
 //--------------------------------------------------------------------------------------------------
 void SpiPutc(unsigned char d)
 {
-	int i,n;
+#ifdef QT_EMULATION
+return; // QT-Simul!
+#endif
+  int i,n;
 	
 	for(i=0;i<8;i++)
 	{
@@ -174,7 +194,10 @@ void SpiPutc(unsigned char d)
 //--------------------------------------------------------------------------------------------------
 void SetBacklight(uint8 light)
 {
-	if(light)	bcm2835_gpio_set(PIN_LCD_BACKLIGHT);
+#ifdef QT_EMULATION
+return; // QT-Simul!
+#endif
+  if(light)	bcm2835_gpio_set(PIN_LCD_BACKLIGHT);
 		else	bcm2835_gpio_clr(PIN_LCD_BACKLIGHT)	;
 }
 
@@ -187,7 +210,7 @@ void SetBacklight(uint8 light)
 //--------------------------------------------------------------------------------------------------
 void SleepMs(uint32 ms)
 {
-	bcm2835_delay(ms);
+  bcm2835_delay(ms);
 }
 
 

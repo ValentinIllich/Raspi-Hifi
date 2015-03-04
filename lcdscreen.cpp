@@ -1,3 +1,11 @@
+// Filename:    lcdscreen.h
+// Description: base class for generic screen diaplay and user input
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -5,10 +13,16 @@
 #include "lcdscreen.h"
 
 bool lcdscreen::m_debugMode = false;
+int lcdscreen::m_activeId = 0;
 lcdscreen *lcdscreen::m_activeScreen = 0;
+
+screenmap lcdscreen::m_screens;
+screenlist lcdscreen::m_screenQueue;
 
 lcdscreen::lcdscreen(objectinfo *objects)
   : m_objectList(objects)
+  , m_lastTime(0)
+  , m_ticks(0)
   , m_repaint(false)
 {
 }
@@ -26,21 +40,79 @@ void lcdscreen::updateDisplay()
 
 void lcdscreen::updateTimer()
 {
-  // \todo hier evtl. alle durchgehen...
-  if( m_activeScreen ) m_activeScreen->timetick();
+  //if( m_activeScreen ) m_activeScreen->timetick();
+  screenmap::iterator it = m_screens.begin();
+  while( it!=m_screens.end() )
+  {
+    it->second->timetick();
+    ++it;
+  }
 }
 
-int lcdscreen::keyPressed( keyType key )
+keyType lcdscreen::keyPressed( keyType key )
 {
+  keyType ret = eKeyNone;
+
   if( m_activeScreen )
-    return m_activeScreen->keEvent(key);
+  {
+    ret = m_activeScreen->keyEvent(key);
+/*    switch( ret )
+    {
+    case eKeyPrev:
+      activatePrevious();
+      ret = m_activeScreen->keyEvent(ret);
+    case eKeyNext:
+    case eKeyCancel:
+      break;
+    default:
+      break;
+    }*/
+  }
+
+  return ret;
+}
+
+void lcdscreen::setupScreen( int id, lcdscreen *screen )
+{
+  screenmap::iterator it = m_screens.find(id);
+  if( it==m_screens.end() )
+    m_screens[id] = screen;
+}
+
+void lcdscreen::activatePrevious()
+{
+  if( m_screenQueue.size()>0 )
+  {
+    int id = m_screenQueue.back();
+    m_screenQueue.pop_back();
+    screenmap::iterator it = m_screens.find(id);
+    if( it!=m_screens.end() )
+    {
+      activateScreen(it->second);
+      m_activeId = id;
+    }
+  }
+}
+
+void lcdscreen::activateScreen( int id )
+{
+  printf("activeScreen %d\n",id);
+  screenmap::iterator it = m_screens.find(id);
+  if( it!=m_screens.end() )
+  {
+    m_screenQueue.push_back(m_activeId);
+    activateScreen(it->second);
+    m_activeId = id;
+  }
   else
-    return 0;
+  {
+    activateScreen((lcdscreen*)0);
+    m_activeId = -1;
+  }
 }
 
 void lcdscreen::activateScreen( lcdscreen *screen )
 {
-  printf("activeScreen\n");
   m_activeScreen = screen;
   if( m_activeScreen ) m_activeScreen->repaint();
 }
@@ -77,7 +149,7 @@ void lcdscreen::drawContents()
 {
   if( m_repaint )
   {
-    unsigned int i = 0;
+    int i = 0;
 
     LCD_ClearScreen();
 
@@ -95,15 +167,18 @@ void lcdscreen::drawContents()
 
     paintEvent();
 
-    for( i=0; m_objectList[i].object!=eNone; i++ )
+    if( m_objectList!=NULL )
     {
-      if( !m_objectList[i].visible )
-        continue;
-
-      if( editText==-1 || editText==i )
+      for( i=0; m_objectList[i].object!=eNone; i++ )
       {
-        LCD_SetFont(m_objectList[i].fontSize);
-        LCD_PrintXY(m_objectList[i].x,m_objectList[i].y,m_objectList[i].text);
+        if( !m_objectList[i].visible )
+          continue;
+
+        if( (editText==-1) || (editText==i) )
+        {
+          LCD_SetFont(m_objectList[i].fontSize);
+          LCD_PrintXY(m_objectList[i].x,m_objectList[i].y,m_objectList[i].text);
+        }
       }
     }
 
@@ -114,11 +189,13 @@ void lcdscreen::drawContents()
   }
 }
 
-void lcdscreen::secTimer(struct tm *result)
+keyType lcdscreen::secTimer(struct tm */*result*/)
 {
+  return eKeyNone;
 }
-int lcdscreen::keyEventHandler( keyType key )
+keyType lcdscreen::keyEventHandler( keyType /*key*/ )
 {
+  return eKeyNone;
 }
 void lcdscreen::paintEvent()
 {
@@ -126,29 +203,29 @@ void lcdscreen::paintEvent()
 
 void lcdscreen::timetick()
 {
-  static int lastTime = 0;
-  static int ticks = 0;
-
   time_t clock = time(NULL);
   struct tm *result = localtime(&clock);
   int actTime = result->tm_sec + result->tm_min*60 + result->tm_hour*3600;
 
-  if( actTime!=lastTime )
+  if( actTime!=m_lastTime )
   {
-    lastTime=actTime;
+    m_lastTime=actTime;
     //printf("%s\n",buffer);
     //printf("%d ticks\n",ticks);
-    ticks = 0;
+    m_ticks = 0;
 
     // this is now a second timer...
-    secTimer(result);
+    keyType key = secTimer(result);
+
+    if( (key!=eKeyNone) && (this==m_activeScreen) )
+      handleKeyEvent(key);
 
     // timeout for backlight is 20 secs
     if( !m_debugMode ) BacklightTimer++;
     if( BacklightTimer==60 ) setBacklightState(eOff);
   }
   else
-    ticks++;
+    m_ticks++;
 }
 
 void lcdscreen::repaint()
@@ -157,12 +234,12 @@ void lcdscreen::repaint()
   //printf("repaint()\n");
 }
 
-int lcdscreen::keEvent( keyType key )
+keyType lcdscreen::keyEvent( keyType key )
 {
   // retrigger backlight timer
   BacklightTimer = 0;
 
-  int retval = 0;
+  keyType retval = eKeyNone;
 
   switch( key )
   {
@@ -201,6 +278,7 @@ int lcdscreen::keEvent( keyType key )
       {
         editText = -1;
         dumpObjectList();
+        repaint();
       }
     }
     else
@@ -220,10 +298,48 @@ int lcdscreen::keEvent( keyType key )
     else
       retval = keyEventHandler(key);
     break;
+  default:
+    retval = keyEventHandler(key);
+    break;
   }
+
+  if( retval!=eKeyNone ) handleKeyEvent(retval);
 
   printf("lcdscreen returned %d\n",retval);
   return retval;
+}
+
+void lcdscreen::handleKeyEvent( keyType key )
+{
+  switch( key )
+  {
+  case eKeyPrev:
+    {
+      screenmap::iterator it = m_screens.find(m_activeId);
+      if( it!=m_screens.end() )
+      {
+        --it;
+        activateScreen(it->first);
+      }
+    }
+    break;
+  case eKeyNext:
+    {
+      screenmap::iterator it = m_screens.find(m_activeId);
+      if( it!=m_screens.end() )
+      {
+        ++it;
+        activateScreen(it->first);
+      }
+    }
+    break;
+  case eKeyCancel:
+    activatePrevious();
+    //ret = m_activeScreen->keyEvent(ret);
+    break;
+  default:
+    break;
+  }
 }
 
 void lcdscreen::DemoGridIncDec( int df, int dx, int dy )
@@ -269,6 +385,8 @@ void lcdscreen::DemoGridIncDec( int df, int dx, int dy )
       if( m_objectList[editText].y<0 )
         m_objectList[editText].y = 63;
     }
+
+    repaint();
   }
 }
 

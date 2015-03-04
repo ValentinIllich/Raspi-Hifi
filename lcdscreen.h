@@ -1,7 +1,17 @@
+// Filename:    lcdscreen.h
+// Description: base class for generic screen diaplay and user input
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #ifndef LCDSCREEN_H
 #define LCDSCREEN_H
 
 #include <time.h>
+#include <map>
+#include <list>
 
 extern "C"
 {
@@ -10,6 +20,10 @@ extern "C"
 #include "raspilcd.h"
 #include "lcd.h"
 }
+
+class lcdscreen;
+typedef std::map<int,lcdscreen*> screenmap;
+typedef std::list<int> screenlist;
 
 typedef enum
 {
@@ -32,13 +46,19 @@ typedef struct objectinfo
 
 typedef enum
 {
+  eKeyNone,
+
   eKeyA,
   eKeyB,
   eKeyC,
   eKeyD,
 
   eKeyUp,
-  eKeyDown
+  eKeyDown,
+
+  eKeyNext,
+  eKeyPrev,
+  eKeyCancel
 } keyType;
 
 typedef enum
@@ -57,35 +77,47 @@ public:
   // to be called by main
   static void updateDisplay();
   static void updateTimer();
-  static int keyPressed( keyType key );
+  static keyType keyPressed( keyType key );
 
-  static void activateScreen( lcdscreen *screen );
+  static void setupScreen( int id, lcdscreen *screen );
+
+  static void activatePrevious();
+  static void activateScreen( int id );
   static void setBacklightState( backlightState state );
 
   static void setDebuMode( bool on );
 
 protected:
   // to be overridden
-  virtual void secTimer(struct tm *result);
-  virtual int keyEventHandler( keyType key );
+  virtual keyType secTimer(struct tm *result);
+  virtual keyType keyEventHandler( keyType key );
   virtual void paintEvent();
 
   // to be called by derived classes
   virtual void repaint();
 
 private:
+  static void activateScreen( lcdscreen *screen );
+
   virtual void drawContents();
   virtual void timetick();
-  virtual int keEvent( keyType key );
+  virtual keyType keyEvent( keyType key );
+  virtual void handleKeyEvent( keyType key );
 
   void DemoGridIncDec( int df, int dx, int dy );
   void dumpObjectList();
 
   objectinfo *m_objectList;
 
+  int m_lastTime;
+  int m_ticks;
   bool m_repaint;
 
   static bool m_debugMode;
+  static screenmap m_screens;
+  static screenlist m_screenQueue;
+
+  static int m_activeId;
   static lcdscreen *m_activeScreen;
 };
 

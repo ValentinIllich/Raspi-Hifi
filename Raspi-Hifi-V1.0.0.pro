@@ -19,10 +19,25 @@ HEADERS += bcm2835.h \
            bmp_raspi.inc \
            bmp_men.inc \
     lcdscreen.h \
-    lcdscreenmain.h
+    lcdscreenmain.h \
+    lcdscreencpu.h \
+    lcdscreenabout.h
 SOURCES += bcm2835.c lcd.c raspilcd.c \
            main.cpp \
     lcdscreen.cpp \
-    lcdscreenmain.cpp
+    lcdscreenmain.cpp \
+    lcdscreencpu.cpp \
+    lcdscreenabout.cpp
 
+macx {
+     SOURCES += QtEmulation.cpp
+     HEADERS += QtEmulation.h
+     MOCS += QtEmulation.h
+}
+
+macx{
+DEFINES += QT_EMULATION
+}
+!macx {
 LIBS += -lrt
+}

@@ -28,6 +28,12 @@
 #define CLOCK_MONOTONIC_RAW 0
 #endif
 
+#ifdef QT_EMULATION
+void clock_gettime(int mode,struct timespec *ts)
+{
+}
+#endif
+
 // Locals to hold pointers to the hardware
 static volatile uint32_t *gpio = MAP_FAILED;
 static volatile uint32_t *pwm  = MAP_FAILED;
