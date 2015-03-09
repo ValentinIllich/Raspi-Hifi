@@ -6,6 +6,7 @@ TEMPLATE = app
 TARGET = 
 DEPENDPATH += .
 INCLUDEPATH += .
+LIBS += -lrt
 
 # Input
 HEADERS += bcm2835.h \
@@ -29,15 +30,13 @@ SOURCES += bcm2835.c lcd.c raspilcd.c \
     lcdscreencpu.cpp \
     lcdscreenabout.cpp
 
-macx {
-     SOURCES += QtEmulation.cpp
-     HEADERS += QtEmulation.h
-     MOCS += QtEmulation.h
-}
+macx|win32{
+    DEFINES += QT_EMULATION
+    LIBS -= -lrt
 
-macx{
-DEFINES += QT_EMULATION
-}
-!macx {
-LIBS += -lrt
+    SOURCES -= bcm2835.c
+
+    SOURCES += QtEmulation.cpp
+    HEADERS += QtEmulation.h
+    MOCS += QtEmulation.h
 }

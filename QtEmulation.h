@@ -1,3 +1,11 @@
+// Filename:    QtEmulation
+// Description: Raspi LCD Emulation using QT 4.8.6
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #ifndef QTEMULATION_H
 #define QTEMULATION_H
 

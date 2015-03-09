@@ -56,7 +56,7 @@ keyType lcdscreen::keyPressed( keyType key )
   if( m_activeScreen )
   {
     ret = m_activeScreen->keyEvent(key);
-/*    switch( ret )
+    /*    switch( ret )
     {
     case eKeyPrev:
       activatePrevious();
@@ -314,24 +314,24 @@ void lcdscreen::handleKeyEvent( keyType key )
   switch( key )
   {
   case eKeyPrev:
+  {
+    screenmap::iterator it = m_screens.find(m_activeId);
+    if( it!=m_screens.end() )
     {
-      screenmap::iterator it = m_screens.find(m_activeId);
-      if( it!=m_screens.end() )
-      {
-        --it;
-        activateScreen(it->first);
-      }
+      --it;
+      activateScreen(it->first);
     }
+  }
     break;
   case eKeyNext:
+  {
+    screenmap::iterator it = m_screens.find(m_activeId);
+    if( it!=m_screens.end() )
     {
-      screenmap::iterator it = m_screens.find(m_activeId);
-      if( it!=m_screens.end() )
-      {
-        ++it;
-        activateScreen(it->first);
-      }
+      ++it;
+      activateScreen(it->first);
     }
+  }
     break;
   case eKeyCancel:
     activatePrevious();
@@ -397,7 +397,7 @@ void lcdscreen::dumpObjectList()
   {
     printf("  { %s,%s, %3d,%3d,%3d,%3d, %d,\"%s\" },\n",
            objT[m_objectList[i].object],m_objectList[i].visible ? "true " : "false",
-      m_objectList[i].x,m_objectList[i].y,m_objectList[i].w,m_objectList[i].h,
-      m_objectList[i].fontSize,m_objectList[i].text);
+        m_objectList[i].x,m_objectList[i].y,m_objectList[i].w,m_objectList[i].h,
+        m_objectList[i].fontSize,m_objectList[i].text);
   }
 }

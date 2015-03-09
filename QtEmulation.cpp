@@ -1,5 +1,12 @@
-#include "QtEmulation.h"
+// Filename:    QtEmulation
+// Description: Raspi LCD Emulation using QT 4.8.6
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
 
+#include "QtEmulation.h"
 #include "lcdscreen.h"
 
 #include <QRadioButton>
@@ -114,12 +121,12 @@ void Qt_ClearScreen(void)
 
 void Qt_SetPenColor(uint8 c)
 {
-  m_pencol = c ? Qt::color1 : Qt::color0;
+  m_pencol = c ? Qt::color0 : Qt::color1;
 }
 
 void Qt_SetFillColor(int8 c)
 {
-  m_fillcol = c ? Qt::color1 : Qt::color0;
+  m_fillcol = c ? Qt::color0 : Qt::color1;
 }
 
 void Qt_SetContrast(uint8 /*contrast*/)

@@ -4,6 +4,7 @@
 // Open Source Licensing GPL 3
 //
 // Author:      Martin Steppuhn, www.emsystech.de
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
 //--------------------------------------------------------------------------------------------------
 
 //=== Includes =====================================================================================
@@ -46,47 +47,47 @@ uint8	ButtonMem;
 int RaspiLcdHwInit(void)
 {
 #ifdef QT_EMULATION
-return 1; // QT-Simul!
+  return 1; // QT-Simul!
 #endif
   int HwRev;
-	
-	HwRev = GetRaspberryHwRevision();
-	
-	if (!bcm2835_init()) return 0;
-	
-	// Buttons 	
-	PinButton[0] = 17;
-	PinButton[1] = 4;
-	PinButton[2] = 24;
-	PinButton[3] = 23;
-	PinButton[4] = 22;
-	PinButton[5] = (HwRev < 2) ? 21 : 27;;
-	
-	bcm2835_gpio_fsel(PinButton[0],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input 
-	bcm2835_gpio_fsel(PinButton[1],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input 
-	bcm2835_gpio_fsel(PinButton[2],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input 
-	bcm2835_gpio_fsel(PinButton[3],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input 
-	bcm2835_gpio_fsel(PinButton[4],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input 
-	bcm2835_gpio_fsel(PinButton[5],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input 
-	
-	bcm2835_gpio_set_pud(PinButton[0],BCM2835_GPIO_PUD_UP); 	// Enable Pullup
-	bcm2835_gpio_set_pud(PinButton[1],BCM2835_GPIO_PUD_UP); 	// Enable Pullup
-	bcm2835_gpio_set_pud(PinButton[2],BCM2835_GPIO_PUD_UP); 	// Enable Pullup
-	bcm2835_gpio_set_pud(PinButton[3],BCM2835_GPIO_PUD_UP); 	// Enable Pullup
-	bcm2835_gpio_set_pud(PinButton[4],BCM2835_GPIO_PUD_UP); 	// Enable Pullup	
-	bcm2835_gpio_set_pud(PinButton[5],BCM2835_GPIO_PUD_UP); 	// Enable Pullup		
-	
-	// LCD Display
-	bcm2835_gpio_fsel(PIN_LCD_MOSI,     BCM2835_GPIO_FSEL_OUTP);	// GPIO10 Output: MOSI
-	bcm2835_gpio_fsel(PIN_LCD_SCLK,     BCM2835_GPIO_FSEL_OUTP);	// GPIO11 Output: SCLK
-	bcm2835_gpio_fsel(PIN_LCD_RST,      BCM2835_GPIO_FSEL_OUTP);	// GPIO25 Output: RST
-	bcm2835_gpio_fsel(PIN_LCD_CS ,      BCM2835_GPIO_FSEL_OUTP);	// GPIO8  Output: CS
-	bcm2835_gpio_fsel(PIN_LCD_RS,       BCM2835_GPIO_FSEL_OUTP);	// GPIO7  Output: RS
-	bcm2835_gpio_fsel(PIN_LCD_BACKLIGHT,BCM2835_GPIO_FSEL_OUTP);	// GPIO18 Output: Backlight
-	
-	Button = ButtonMem = ButtonPressed = 0;
-	
-	return 1;
+
+  HwRev = GetRaspberryHwRevision();
+
+  if (!bcm2835_init()) return 0;
+
+  // Buttons
+  PinButton[0] = 17;
+  PinButton[1] = 4;
+  PinButton[2] = 24;
+  PinButton[3] = 23;
+  PinButton[4] = 22;
+  PinButton[5] = (HwRev < 2) ? 21 : 27;;
+
+  bcm2835_gpio_fsel(PinButton[0],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input
+  bcm2835_gpio_fsel(PinButton[1],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input
+  bcm2835_gpio_fsel(PinButton[2],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input
+  bcm2835_gpio_fsel(PinButton[3],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input
+  bcm2835_gpio_fsel(PinButton[4],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input
+  bcm2835_gpio_fsel(PinButton[5],BCM2835_GPIO_FSEL_INPT)	;	// Set GPIO Pin to Input
+
+  bcm2835_gpio_set_pud(PinButton[0],BCM2835_GPIO_PUD_UP); 	// Enable Pullup
+  bcm2835_gpio_set_pud(PinButton[1],BCM2835_GPIO_PUD_UP); 	// Enable Pullup
+  bcm2835_gpio_set_pud(PinButton[2],BCM2835_GPIO_PUD_UP); 	// Enable Pullup
+  bcm2835_gpio_set_pud(PinButton[3],BCM2835_GPIO_PUD_UP); 	// Enable Pullup
+  bcm2835_gpio_set_pud(PinButton[4],BCM2835_GPIO_PUD_UP); 	// Enable Pullup
+  bcm2835_gpio_set_pud(PinButton[5],BCM2835_GPIO_PUD_UP); 	// Enable Pullup
+
+  // LCD Display
+  bcm2835_gpio_fsel(PIN_LCD_MOSI,     BCM2835_GPIO_FSEL_OUTP);	// GPIO10 Output: MOSI
+  bcm2835_gpio_fsel(PIN_LCD_SCLK,     BCM2835_GPIO_FSEL_OUTP);	// GPIO11 Output: SCLK
+  bcm2835_gpio_fsel(PIN_LCD_RST,      BCM2835_GPIO_FSEL_OUTP);	// GPIO25 Output: RST
+  bcm2835_gpio_fsel(PIN_LCD_CS ,      BCM2835_GPIO_FSEL_OUTP);	// GPIO8  Output: CS
+  bcm2835_gpio_fsel(PIN_LCD_RS,       BCM2835_GPIO_FSEL_OUTP);	// GPIO7  Output: RS
+  bcm2835_gpio_fsel(PIN_LCD_BACKLIGHT,BCM2835_GPIO_FSEL_OUTP);	// GPIO18 Output: Backlight
+
+  Button = ButtonMem = ButtonPressed = 0;
+
+  return 1;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -99,19 +100,19 @@ return 1; // QT-Simul!
 void UpdateButtons(void)
 {
 #ifdef QT_EMULATION
-return; // QT-Simul!
+  return; // QT-Simul!
 #endif
   ButtonMem = Button;		// Save last State
-	
-	Button = 0;
-	if(!bcm2835_gpio_lev(PinButton[0])) Button |= (1<<0);
-	if(!bcm2835_gpio_lev(PinButton[1])) Button |= (1<<1);
-	if(!bcm2835_gpio_lev(PinButton[2])) Button |= (1<<2);
-	if(!bcm2835_gpio_lev(PinButton[3])) Button |= (1<<3);
-	if(!bcm2835_gpio_lev(PinButton[4])) Button |= (1<<4);
-	if(!bcm2835_gpio_lev(PinButton[5])) Button |= (1<<5);
-	
-	ButtonPressed = (Button ^ ButtonMem) & Button;			// Set by Pressing a Button
+
+  Button = 0;
+  if(!bcm2835_gpio_lev(PinButton[0])) Button |= (1<<0);
+  if(!bcm2835_gpio_lev(PinButton[1])) Button |= (1<<1);
+  if(!bcm2835_gpio_lev(PinButton[2])) Button |= (1<<2);
+  if(!bcm2835_gpio_lev(PinButton[3])) Button |= (1<<3);
+  if(!bcm2835_gpio_lev(PinButton[4])) Button |= (1<<4);
+  if(!bcm2835_gpio_lev(PinButton[5])) Button |= (1<<5);
+
+  ButtonPressed = (Button ^ ButtonMem) & Button;			// Set by Pressing a Button
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -129,34 +130,34 @@ return; // QT-Simul!
 int GetRaspberryHwRevision(void)
 {
 #ifdef QT_EMULATION
-return 0; // QT-Simul!
+  return 0; // QT-Simul!
 #endif
   FILE *fp;
-	char line[32];
-	char s[32];
-	int i;
-	
-	fp = fopen("/proc/cpuinfo", "r");		// open as file
-	if(fp != NULL)
-	{	
-		while(fgets(line,32,fp))			// get line
-		{
-			sscanf(line,"%s : %x",(char*)&s,&i);		// parse for key and value
-			if(strcmp(s,"Revision") == 0)				// check for "Revision"
-			{			
-				//printf("Found: %s=%i\r\n",s,i);
-				if(i < 4)  return 1;
-				else		return 2;
-			}
-		}
-	}
-	else
-	{
-		//printf("cpuinfo not available.\r\n"); 
-		return 0;
-	}
-	//printf("no revision info available.\r\n"); 
-	return 0;
+  char line[32];
+  char s[32];
+  int i;
+
+  fp = fopen("/proc/cpuinfo", "r");		// open as file
+  if(fp != NULL)
+  {
+    while(fgets(line,32,fp))			// get line
+    {
+      sscanf(line,"%s : %x",(char*)&s,&i);		// parse for key and value
+      if(strcmp(s,"Revision") == 0)				// check for "Revision"
+      {
+        //printf("Found: %s=%i\r\n",s,i);
+        if(i < 4)  return 1;
+        else		return 2;
+      }
+    }
+  }
+  else
+  {
+    //printf("cpuinfo not available.\r\n");
+    return 0;
+  }
+  //printf("no revision info available.\r\n");
+  return 0;
 }
 
 
@@ -170,19 +171,19 @@ return 0; // QT-Simul!
 void SpiPutc(unsigned char d)
 {
 #ifdef QT_EMULATION
-return; // QT-Simul!
+  return; // QT-Simul!
 #endif
   int i,n;
-	
-	for(i=0;i<8;i++)
-	{
-		if(d & 0x80)	bcm2835_gpio_set(PIN_LCD_MOSI);		// MOSI = 1
-			else		bcm2835_gpio_clr(PIN_LCD_MOSI);		// MOSI = 0
-		d <<= 1;
-		
-		for(n=0;n<4;n++) bcm2835_gpio_clr(PIN_LCD_SCLK); 	// CLK = 0
-		for(n=0;n<4;n++) bcm2835_gpio_set(PIN_LCD_SCLK);	// CLK = 1
-	}
+
+  for(i=0;i<8;i++)
+  {
+    if(d & 0x80)	bcm2835_gpio_set(PIN_LCD_MOSI);		// MOSI = 1
+    else		bcm2835_gpio_clr(PIN_LCD_MOSI);		// MOSI = 0
+    d <<= 1;
+
+    for(n=0;n<4;n++) bcm2835_gpio_clr(PIN_LCD_SCLK); 	// CLK = 0
+    for(n=0;n<4;n++) bcm2835_gpio_set(PIN_LCD_SCLK);	// CLK = 1
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -195,10 +196,10 @@ return; // QT-Simul!
 void SetBacklight(uint8 light)
 {
 #ifdef QT_EMULATION
-return; // QT-Simul!
+  return; // QT-Simul!
 #endif
   if(light)	bcm2835_gpio_set(PIN_LCD_BACKLIGHT);
-		else	bcm2835_gpio_clr(PIN_LCD_BACKLIGHT)	;
+  else	bcm2835_gpio_clr(PIN_LCD_BACKLIGHT)	;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -210,6 +211,9 @@ return; // QT-Simul!
 //--------------------------------------------------------------------------------------------------
 void SleepMs(uint32 ms)
 {
+#ifdef QT_EMULATION
+  return; // QT-Simul!
+#endif
   bcm2835_delay(ms);
 }
 

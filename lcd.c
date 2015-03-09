@@ -4,6 +4,7 @@
 // Open Source Licensing GPL 3
 //
 // Author:      Martin Steppuhn, www.emsystech.de
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
 //--------------------------------------------------------------------------------------------------
 
 //=== Includes =====================================================================================
@@ -49,7 +50,7 @@ void lcd_set_xy(uint8 x,uint8 ypage);
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_SSetPenColor
 // Function:  Set pen color
-//            
+//
 // Parameter: 0=White 1=Black
 // Return:    -
 //--------------------------------------------------------------------------------------------------
@@ -65,9 +66,9 @@ void LCD_SetPenColor(uint8 c)
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_SSetFillColor
 // Function:  Set fill color
-//            
+//
 // Parameter: -1=transparent, 0=white, 1=black
-// Return:    
+// Return:
 //--------------------------------------------------------------------------------------------------
 void LCD_SetFillColor(int8 c)
 {
@@ -79,21 +80,21 @@ void LCD_SetFillColor(int8 c)
 }
 
 //--------------------------------------------------------------------------------------------------
-// Name:      LCD_SSetFont 
-// Function:  Set font 
-//            
+// Name:      LCD_SSetFont
+// Function:  Set font
+//
 // Parameter: 0..3 for Fonts
 // Return:    -
 //--------------------------------------------------------------------------------------------------
 void LCD_SetFont(uint8 f)
 {
-	FontNumber = f;
+  FontNumber = f;
 }
 
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_ClearScreen
 // Function:  Clear Screen
-//            
+//
 // Parameter: -
 // Return:    -
 //--------------------------------------------------------------------------------------------------
@@ -114,7 +115,7 @@ void LCD_ClearScreen(void)
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_PutPixel
 // Function:  Set single pixel at x,x
-//            
+//
 // Parameter: x,y position, color
 // Return:    -
 //--------------------------------------------------------------------------------------------------
@@ -126,15 +127,15 @@ void LCD_PutPixel(uint8 x,uint8 y,uint8 color)
   if((x < LCD_WIDTH) && (y < LCD_HEIGHT))
   {
     if(color)	framebuffer[x][y>>3] |=   (1<<(y & 7));
-      else	framebuffer[x][y>>3] &=  ~(1<<(y & 7));
+    else	framebuffer[x][y>>3] &=  ~(1<<(y & 7));
   }
 #endif
 }
 
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_DrawLine
-// Function:  Draw line from xy to xy 
-//            
+// Function:  Draw line from xy to xy
+//
 // Parameter: Start and endpoint
 // Return:    -
 //--------------------------------------------------------------------------------------------------
@@ -179,7 +180,7 @@ void LCD_DrawLine(uint8 x0,uint8 y0,uint8 x1,uint8 y1)
 // Name:      LCD_DrawCircle
 // Function:  Draw circle with centerpont an radius
 //			  linewidth=1 pixel, no fill
-//            
+//
 // Parameter: xy centerpoint and radius
 // Return:    -
 //--------------------------------------------------------------------------------------------------
@@ -227,7 +228,7 @@ void LCD_DrawCircle(uint8 x0,uint8 y0,uint8 radius)
 // Name:      LCD_DrawEllipse
 // Function:  Draw ellipse with centerpont an "radius"
 //			  linewidth=1 pixel, no fill
-//            
+//
 // Parameter: xy centerpoint and "x,y radius"
 // Return:    -
 //--------------------------------------------------------------------------------------------------
@@ -242,29 +243,29 @@ void LCD_DrawEllipse(int xm, int ym, int a, int b)
 
   do
   {
-   LCD_PutPixel(xm+dx, ym+dy,PenColor); /* I. Quadrant */
-   LCD_PutPixel(xm-dx, ym+dy,PenColor); /* II. Quadrant */
-   LCD_PutPixel(xm-dx, ym-dy,PenColor); /* III. Quadrant */
-   LCD_PutPixel(xm+dx, ym-dy,PenColor); /* IV. Quadrant */
+    LCD_PutPixel(xm+dx, ym+dy,PenColor); /* I. Quadrant */
+    LCD_PutPixel(xm-dx, ym+dy,PenColor); /* II. Quadrant */
+    LCD_PutPixel(xm-dx, ym-dy,PenColor); /* III. Quadrant */
+    LCD_PutPixel(xm+dx, ym-dy,PenColor); /* IV. Quadrant */
 
-   e2 = 2*err;
-   if (e2 <  (2*dx+1)*b2) { dx++; err += (2*dx+1)*b2; }
-   if (e2 > -(2*dy-1)*a2) { dy--; err -= (2*dy-1)*a2; }
+    e2 = 2*err;
+    if (e2 <  (2*dx+1)*b2) { dx++; err += (2*dx+1)*b2; }
+    if (e2 > -(2*dy-1)*a2) { dy--; err -= (2*dy-1)*a2; }
   }
   while (dy >= 0);
 
   while (dx++ < a)
   { /* fehlerhafter Abbruch bei flachen Ellipsen (b=1) */
-      LCD_PutPixel(xm+dx, ym,PenColor); /* -> Spitze der Ellipse vollenden */
-      LCD_PutPixel(xm-dx, ym,PenColor);
+    LCD_PutPixel(xm+dx, ym,PenColor); /* -> Spitze der Ellipse vollenden */
+    LCD_PutPixel(xm-dx, ym,PenColor);
   }
 #endif
 }
 
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_DrawRect
-// Function:  Draw rectangle, with pencolor and fillcolor 
-//            
+// Function:  Draw rectangle, with pencolor and fillcolor
+//
 // Parameter: two diagonal points and  linewidth
 // Return:    -
 //--------------------------------------------------------------------------------------------------
@@ -300,7 +301,7 @@ void LCD_DrawRect(uint8 x0,uint8 y0,uint8 x1,uint8 y1,uint8 line)
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_PrintXY
 // Function:  Print String
-//            
+//
 // Parameter: x,y startpoint, string
 // Return:    -
 //--------------------------------------------------------------------------------------------------
@@ -340,7 +341,7 @@ void LCD_PrintXY(uint8 x0,uint8 y0,const char *s)
         for(iy=0;iy<8;iy++)	// je ein Byte vertikal ausgeben
         {
           if(d & (1<<iy))	LCD_PutPixel(x0+ix,y+iy,1);
-            else			LCD_PutPixel(x0+ix,y+iy,0);
+          else			LCD_PutPixel(x0+ix,y+iy,0);
         }
       }
       i_char_height = (i_char_height >= 8) ? i_char_height - 8 : 0;
@@ -355,7 +356,7 @@ void LCD_PrintXY(uint8 x0,uint8 y0,const char *s)
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_DrawBitmap
 // Function:  Draw bitmap at startingpoint
-//            
+//
 // Parameter: Startpoint xy, pointer to bitmaparray
 // Return:    -
 //--------------------------------------------------------------------------------------------------
@@ -372,7 +373,7 @@ void LCD_DrawBitmap(uint8 x0,uint8 y0,const uint8 *bmp)
     for(ix=0;ix<width;ix++)
     {
       if(bmp[ix+((iy/8)*width)] & (1<<(iy & 7))) 	LCD_PutPixel(x0+ix,y0+iy,1);
-        else								LCD_PutPixel(x0+ix,y0+iy,0);
+      else								LCD_PutPixel(x0+ix,y0+iy,0);
     }
   }
 }
@@ -381,46 +382,46 @@ void LCD_DrawBitmap(uint8 x0,uint8 y0,const uint8 *bmp)
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_DrawBitmapFromFile
 // Function:  Draw bitmap from file        UNDER CONSTRUCTION !!!
-//            
-// Parameter: 
-// Return:    
+//
+// Parameter:
+// Return:
 //--------------------------------------------------------------------------------------------------
 void LCD_DrawBitmapFromFile(uint8 x0,uint8 y0,const char *filename)
 {
-	uint8	width,height;
-	uint16	ix,iy;
-	FILE *fp;
-	uint8	buf[10000];
-	uint8 i;
-		
-	
-	fp = fopen(filename, "rb");		// open as file
-	if(fp != NULL)
-	{	
-		fread(buf, 1, 58,fp);
-		
-		fread(buf,1,1024,fp);
-		
-		width = 128;
-		height = 64;
-		
-		i = 0;
-		for(iy=0;iy<height;iy++)
-		{
-			for(ix=0;ix<width;ix++)
-			{
-				if(buf[(ix/8)+(iy*(width/8))] & (0x80>>(ix & 7))) 	LCD_PutPixel(x0+ix,y0+(height-iy),0);
-					else												LCD_PutPixel(x0+ix,y0+(height-iy),1);
-			}
-		}
-	}
+  uint8	width,height;
+  uint16	ix,iy;
+  FILE *fp;
+  uint8	buf[10000];
+  uint8 i;
+
+
+  fp = fopen(filename, "rb");		// open as file
+  if(fp != NULL)
+  {
+    fread(buf, 1, 58,fp);
+
+    fread(buf,1,1024,fp);
+
+    width = 128;
+    height = 64;
+
+    i = 0;
+    for(iy=0;iy<height;iy++)
+    {
+      for(ix=0;ix<width;ix++)
+      {
+        if(buf[(ix/8)+(iy*(width/8))] & (0x80>>(ix & 7))) 	LCD_PutPixel(x0+ix,y0+(height-iy),0);
+          else												LCD_PutPixel(x0+ix,y0+(height-iy),1);
+      }
+    }
+  }
 }
 */
 
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_WriteFramebuffer
 // Function:  Transfer Framebuffer (RAM) to display via SPI
-//            
+//
 // Parameter: -
 // Return:    -
 //--------------------------------------------------------------------------------------------------
@@ -444,8 +445,8 @@ void LCD_WriteFramebuffer(void)
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_SetContrast
 // Function:  Kontrasteinstellung
-//            
-// Parameter: Kontrast (0..63)     
+//
+// Parameter: Kontrast (0..63)
 // Return:    -
 //--------------------------------------------------------------------------------------------------
 void LCD_SetContrast(uint8 contrast)
@@ -461,39 +462,39 @@ void LCD_SetContrast(uint8 contrast)
 //--------------------------------------------------------------------------------------------------
 // Name:      LCD_Init
 // Function:  Init displaycontroller
-//            
+//
 // Parameter: -
 // Return:    -
 //--------------------------------------------------------------------------------------------------
 void LCD_Init(void)
 {
 #ifdef QT_EMULATION
-return; // QT-Simul!
+  return; // QT-Simul!
 #endif
   LCD_RST_CLR;		// Reset LCD-Display
-	SleepMs(50);		// Wait ~ 200ms	
-	LCD_RST_SET;
-	SleepMs(200);		// Wait ~ 200ms	
+  SleepMs(50);		// Wait ~ 200ms
+  LCD_RST_SET;
+  SleepMs(200);		// Wait ~ 200ms
 
-	lcd_write_cmd(0xE2);
-	lcd_write_cmd(0x40);
-	lcd_write_cmd(0xA1);
-	lcd_write_cmd(0xC0);
-	lcd_write_cmd(0xA4);
-	lcd_write_cmd(0xA6);
-	lcd_write_cmd(0xA2);
-	lcd_write_cmd(0x2F);
-	lcd_write_cmd(0x27);
-	
-	lcd_write_cmd(0x81);
-	lcd_write_cmd(6);
+  lcd_write_cmd(0xE2);
+  lcd_write_cmd(0x40);
+  lcd_write_cmd(0xA1);
+  lcd_write_cmd(0xC0);
+  lcd_write_cmd(0xA4);
+  lcd_write_cmd(0xA6);
+  lcd_write_cmd(0xA2);
+  lcd_write_cmd(0x2F);
+  lcd_write_cmd(0x27);
 
-	lcd_write_cmd(0xFA);
-	lcd_write_cmd(0x90);
-	lcd_write_cmd(0xAF);
+  lcd_write_cmd(0x81);
+  lcd_write_cmd(6);
 
-	LCD_ClearScreen();
-	LCD_WriteFramebuffer();
+  lcd_write_cmd(0xFA);
+  lcd_write_cmd(0x90);
+  lcd_write_cmd(0xAF);
+
+  LCD_ClearScreen();
+  LCD_WriteFramebuffer();
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -505,55 +506,56 @@ return; // QT-Simul!
 //--------------------------------------------------------------------------------------------------
 // Name:      LcdWriteCmd
 // Function:  Kommandobyte an Display senden
-//            
+//
 // Parameter: Byte
 // Return:    -
 //--------------------------------------------------------------------------------------------------
 void lcd_write_cmd(uint8 d)
 {
 #ifdef QT_EMULATION
-return; // QT-Simul!
+  return; // QT-Simul!
 #endif
   LCD_CS_CLR;
-	LCD_RS_CLR;			// Command Mode
-	LCD_SPI_PUTC(d);
-	LCD_SPI_WAIT_BUSY;
-	LCD_CS_SET;
+  LCD_RS_CLR;			// Command Mode
+  LCD_SPI_PUTC(d);
+  LCD_SPI_WAIT_BUSY;
+  LCD_CS_SET;
 }
 
 //--------------------------------------------------------------------------------------------------
 // Name:      lcd_write_data
 // Function:  Datenbyte an Display senden
-//            
+//
 // Parameter: Byte
 // Return:    -
 //--------------------------------------------------------------------------------------------------
 void lcd_write_data(uint8 d)
 {
 #ifdef QT_EMULATION
-return; // QT-Simul!
+  return; // QT-Simul!
 #endif
   LCD_CS_CLR;
-	LCD_RS_SET;			// Data Mode
-	LCD_SPI_PUTC(d);
-	LCD_SPI_WAIT_BUSY;
-	LCD_CS_SET;
+  LCD_RS_SET;			// Data Mode
+  LCD_SPI_PUTC(d);
+  LCD_SPI_WAIT_BUSY;
+  LCD_CS_SET;
 }
 
 //--------------------------------------------------------------------------------------------------
 // Name:      LcdSetXY
-// Function:  Position für Ausgabe festlegen (Koordinaten)
-//            
+// Function:  Position fÃ¼r Ausgabe festlegen (Koordinaten)
+//
 // Parameter: X Position (Pixel), Y Position (Page / 8 Pixel Blocks)
 // Return:    -
 //--------------------------------------------------------------------------------------------------
 void lcd_set_xy(uint8 x,uint8 ypage)
 {
 #ifdef QT_EMULATION
-return; // QT-Simul!
+  return; // QT-Simul!
 #endif
   x += LCD_X_OFFSET;
-	lcd_write_cmd(0x00 + (x & 0x0F));
-	lcd_write_cmd(0x10 + ((x>>4) & 0x0F));
-	lcd_write_cmd(0xB0 + (ypage & 0x07));
+  lcd_write_cmd(0x00 + (x & 0x0F));
+  lcd_write_cmd(0x10 + ((x>>4) & 0x0F));
+  lcd_write_cmd(0xB0 + (ypage & 0x07));
 }
+

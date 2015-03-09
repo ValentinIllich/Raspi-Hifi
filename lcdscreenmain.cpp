@@ -1,4 +1,4 @@
-// Filename:    lcdmainscreen.h
+// Filename:    lcdmainscreen.cpp
 // Description: main screen and user input for record and play
 //
 // Open Source Licensing GPL 3
@@ -28,20 +28,21 @@ static objectinfo strings[] = {
 
 int spawn (const char* program, const char** arg_list)
 {
-pid_t child_pid;
-/* Duplicate this process. */
-child_pid = fork ();
-if (child_pid != 0)
+  pid_t child_pid;
+  /* Duplicate this process. */
+  child_pid = fork ();
+  if (child_pid != 0)
     /* This is the parent process. */
-     return child_pid;
-else {
+    return child_pid;
+  else
+  {
     /* Now execute PROGRAM, searching for it in the path. */
-     execvp (program, (char**)arg_list);
+    execvp (program, (char**)arg_list);
     /* The execvp function returns only if an error occurs. */
     fprintf (stderr, "an error occurred in execvp\n");
     _exit (-1);
-    }
- }
+  }
+}
 
 static lcdscreenmain mainscreen;
 

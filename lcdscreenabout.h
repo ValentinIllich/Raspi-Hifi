@@ -1,3 +1,11 @@
+// Filename:    lcdscreenabout
+// Description: shows program information screen
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #ifndef LCDSCREENABOUT_H
 #define LCDSCREENABOUT_H
 
@@ -16,6 +24,7 @@ protected:
 
 private:
   int m_seconds;
+  int m_contrast;
 };
 
 #endif // LCDSCREENABOUT_H

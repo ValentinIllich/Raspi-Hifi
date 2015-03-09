@@ -6,4 +6,4 @@ makefile.org
 Makefile
 Raspi-Hifi-V1
 moc*.*
-*.pro.user*
+Raspi-Hifi-V1.0.0.pro.*

@@ -1,3 +1,12 @@
+// Filename:    lcdscreencpu
+// Description: shows the cpu temperature histoty
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Martin Steppuhn, www.emsystech.de
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #ifndef LCDSCREENCPU_H
 #define LCDSCREENCPU_H
 

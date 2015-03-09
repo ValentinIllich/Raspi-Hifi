@@ -1,3 +1,12 @@
+// Filename:    lcdscreencpu
+// Description: shows the cpu temperature histoty
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Martin Steppuhn, www.emsystech.de
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -27,7 +36,7 @@ void lcdscreencpu::paintEvent()
   lcdscreen::paintEvent();
   uint16	i,y;
 
-//	LCD_ClearScreen();
+  //	LCD_ClearScreen();
   LCD_SetPenColor(1);
   LCD_SetFont(1);
   LCD_PrintXY(40,0,"CPU:");
@@ -54,7 +63,7 @@ void lcdscreencpu::paintEvent()
   }
 }
 
-keyType lcdscreencpu::secTimer(struct tm *result)
+keyType lcdscreencpu::secTimer(struct tm */*result*/)
 {
   FILE *fp;
   unsigned int temp;
@@ -84,6 +93,8 @@ keyType lcdscreencpu::secTimer(struct tm *result)
   DemoMem[0] = temp;
 
   repaint();
+
+  return eKeyNone;
 }
 
 keyType lcdscreencpu::keyEventHandler( keyType key )
@@ -95,6 +106,8 @@ keyType lcdscreencpu::keyEventHandler( keyType key )
     break;
   case eKeyB:
     lcdscreen::activateScreen(2);
+    break;
+  default:
     break;
   }
 
