@@ -10,15 +10,18 @@
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
-#include <stdlib.h>
 #include <errno.h>
 #include <sys/wait.h>
 
 #include "lcdscreenmain.h"
+#include "lcdscreentimer.h"
+#include "lcdscreenselect.h"
+#include "screenids.h"
 
 static objectinfo strings[] = {
   { eText,true,  7, 0,  0, 0,  0,"31.01.2015 12:00:39" },
-  { eText,true,  0,56,  0, 0,  0,"Power 789012345678901" },
+  { eText,true,  0,56,  0, 0,  0,"Power           About" },
+  { eText,true, 48,56,  0, 0,  0,"Timer" },
   { eText,true, 80, 9,  0, 0,  1,"Record" },
   { eText,true, 96,38,  0, 0,  1,"Play" },
   { eText,true, 17,24,  0, 0,  3,"--:--:--" },
@@ -48,12 +51,13 @@ static lcdscreenmain mainscreen;
 
 lcdscreenmain::lcdscreenmain()
   : lcdscreen(strings)
-  , m_recorId(-1)
+  , m_recordId(-1)
   , m_playId(-1)
   , m_startTime(-1)
+  , m_lastScreen(eNoAction)
 {
   strcpy(m_recordfile,"");
-  setupScreen(0,this);
+  setupScreen(RECORD_PLAY_SCREEN,this);
 }
 
 lcdscreenmain::~lcdscreenmain()
@@ -80,13 +84,20 @@ int proc_exists(pid_t pid)
 #endif
 }
 
-keyType lcdscreenmain::secTimer(struct tm *result)
+void lcdscreenmain::activatedHandler()
 {
-  static char buffer[4096];
+  strings[2].visible=true;
+  strings[3].visible=true;
+  strings[4].visible=true;
+}
 
-  if( m_recorId>=0 )
+keyType lcdscreenmain::secTimerHandler(struct tm *result)
+{
+  static char buffer[128];
+
+  if( m_recordId>=0 )
   {
-    if( !proc_exists(m_recorId) )
+    if( !proc_exists(m_recordId) )
     {
       printf("record no longer running: %d!\n",errno);
       stopRecording();
@@ -101,32 +112,40 @@ keyType lcdscreenmain::secTimer(struct tm *result)
     }
   }
 
-  if( (m_recorId>=0) || (m_playId>=0) )
+  int actTime = lcdscreen::toTimeInSeconds(result);
+  int delta = actTime-m_startTime;
+
+  int dh = delta/3600;
+  delta = delta % 3600;
+  int dm = delta / 60;
+  delta = delta % 60;
+  int ds = delta;
+
+  if( lcdscreentimer::timerActive() )
+  {
+    if( (ds%2)==0 )
+      strings[2].visible=true;
+    else
+      strings[2].visible=false;
+  }
+
+  if( (m_recordId>=0) || (m_playId>=0) )
   {
     static char buffer[128];
 
-    int actTime = result->tm_sec + result->tm_min*60 + result->tm_hour*3600;
-    int delta = actTime-m_startTime;
-
-    int dh = delta/3600;
-    delta = delta % 3600;
-    int dm = delta / 60;
-    delta = delta % 60;
-    int ds = delta;
-
     if( (ds%2)==0 )
     {
-      if( m_recorId>=0 ) strings[2].visible=true;
-      if( m_playId>=0 ) strings[3].visible=true;
+      if( m_recordId>=0 ) strings[3].visible=true;
+      if( m_playId>=0 ) strings[4].visible=true;
     }
     else
     {
-      if( m_recorId>=0 ) strings[2].visible=false;
-      if( m_playId>=0 ) strings[3].visible=false;
+      if( m_recordId>=0 ) strings[3].visible=false;
+      if( m_playId>=0 ) strings[4].visible=false;
     }
 
     sprintf(buffer,"%02d:%02d:%02d",dh,dm,ds);
-    strings[4].text = buffer;
+    strings[5].text = buffer;
   }
 
   sprintf(buffer,"%02d.%02d.%04d %02d:%02d:%02d",result->tm_mday,result->tm_mon+1,result->tm_year+1900,result->tm_hour,result->tm_min,result->tm_sec);
@@ -142,12 +161,8 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
 
   switch(key)
   {
-  case eKeyB:
-    //ret = eKeyNext;
-    lcdscreen::activateScreen(1);
-    break;
   case eKeyUp:
-    if( m_recorId>=0 )
+    if( m_recordId>=0 )
       stopRecording();
     else
       startRecording();
@@ -157,10 +172,45 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
       stopPlay();
     else if( strlen(m_recordfile)>0 )
       startPlay(m_recordfile);
+    else
+    {
+      m_lastScreen = eSelection;
+      lcdscreen::activateScreen(SELECT_SCREEN);
+    }
     break;
   case eKeyA:
-    system("sudo umount /dev/sda1");
-    system("sudo shutdown -h now");
+    if( lcdscreentimer::timerActive() || m_recordId>=0 || m_playId>=0 )
+    {
+      m_lastScreen = eNoShutdown;
+      lcdscreen::activateScreen(POWER_DENIED);
+    }
+    else
+    {
+      m_lastScreen = eShutDown;
+      lcdscreen::activateScreen(POWER_SCREEN);
+    }
+    break;
+  case eKeyB:
+    lcdscreen::activateScreen(TIMER_SCREEN);
+    break;
+  case eKeyC:
+    lcdscreen::activateScreen(ABOUT_SCREEN);
+    break;
+  case eKeyCancel:
+    switch( m_lastScreen )
+    {
+    case eSelection:
+      if( strlen(lcdscreenselect::selectedFile())>0 )
+      {
+        startPlay(lcdscreenselect::selectedFile());
+        lcdscreenselect::resetSelectedFile();
+      }
+      break;
+    case eShutDown:
+      break;
+    default:
+      break;
+    }
     break;
   default:
     break;
@@ -172,31 +222,31 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
 
 void lcdscreenmain::startRecording()
 {
-  if( m_recorId==-1 )
+  if( m_recordId==-1 )
   {
     time_t clock = time(NULL);
     struct tm *result = localtime(&clock);
     sprintf(m_recordfile,"/home/pi/usbstick/%04d-%02d-%02dT%02d-%02d-%02d.wav",result->tm_year+1900,result->tm_mon+1,result->tm_mday,result->tm_hour,result->tm_min,result->tm_sec);
 
     const char *args[] = { "/usr/bin/arecord","-f", "cd", "-Dhw:1,0", "-r", "44100", m_recordfile, NULL };
-    m_recorId = spawn("/usr/bin/arecord",args);
-    printf("record process id is %d\n",m_recorId);
+    m_recordId = spawn("/usr/bin/arecord",args);
+    printf("record process id is %d\n",m_recordId);
 
-    m_startTime = result->tm_sec + result->tm_min*60 + result->tm_hour*3600;
-    strings[4].text = "00:00:00";
+    m_startTime = lcdscreen::toTimeInSeconds(result);
+    strings[5].text = "00:00:00";
     repaint();
   }
 }
 
 void lcdscreenmain::stopRecording()
 {
-  if( m_recorId>=0 )
+  if( m_recordId>=0 )
   {
-    int ret = kill(m_recorId,SIGTERM);
+    int ret = kill(m_recordId,SIGTERM);
     printf("record process killed: %d\n",ret);
-    m_recorId = -1;
-    strings[2].visible=true;
-    strings[4].text = "--:--:--";
+    m_recordId = -1;
+    strings[3].visible=true;
+    strings[5].text = "--:--:--";
     repaint();
   }
 }
@@ -211,8 +261,8 @@ void lcdscreenmain::startPlay(char *playfile)
     m_playId = spawn("/usr/bin/arecord",args);
     printf("play process id is %d\n",m_playId);
 
-    m_startTime = result->tm_sec + result->tm_min*60 + result->tm_hour*3600;
-    strings[4].text = "00:00:00";
+    m_startTime = lcdscreen::toTimeInSeconds(result);
+    strings[5].text = "00:00:00";
     repaint();
   }
 }
@@ -224,8 +274,8 @@ void lcdscreenmain::stopPlay()
     int ret = kill(m_playId,SIGTERM);
     printf("play process killed: %d\n",ret);
     m_playId = -1;
-    strings[3].visible=true;
-    strings[4].text = "--:--:--";
+    strings[4].visible=true;
+    strings[5].text = "--:--:--";
     repaint();
   }
 }

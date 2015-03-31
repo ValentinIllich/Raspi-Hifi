@@ -24,6 +24,7 @@ lcdscreen::lcdscreen(objectinfo *objects)
   , m_lastTime(0)
   , m_ticks(0)
   , m_repaint(false)
+  , m_isActive(false)
 {
 }
 
@@ -104,17 +105,31 @@ void lcdscreen::activateScreen( int id )
     activateScreen(it->second);
     m_activeId = id;
   }
-  else
-  {
-    activateScreen((lcdscreen*)0);
-    m_activeId = -1;
-  }
+//  else
+//  {
+//    activateScreen((lcdscreen*)0);
+//    m_activeId = -1;
+//  }
 }
 
 void lcdscreen::activateScreen( lcdscreen *screen )
 {
+  if( m_activeScreen ) m_activeScreen->deactivatedHandler();
   m_activeScreen = screen;
-  if( m_activeScreen ) m_activeScreen->repaint();
+  if( m_activeScreen )
+  {
+    m_activeScreen->activatedHandler();
+    m_activeScreen->repaint();
+  }
+}
+
+lcdscreen *lcdscreen::getScreen( int id )
+{
+  screenmap::iterator it = m_screens.find(id);
+  if( it!=m_screens.end() )
+    return it->second;
+
+  return NULL;
 }
 
 static int Backlight = 1;
@@ -189,7 +204,25 @@ void lcdscreen::drawContents()
   }
 }
 
-keyType lcdscreen::secTimer(struct tm */*result*/)
+void lcdscreen::activated()
+{
+  m_isActive = true;
+  activatedHandler();
+}
+
+void lcdscreen::deactivated()
+{
+  m_isActive = false;
+  deactivatedHandler();
+}
+
+void lcdscreen::activatedHandler()
+{
+}
+void lcdscreen::deactivatedHandler()
+{
+}
+keyType lcdscreen::secTimerHandler(struct tm */*result*/)
 {
   return eKeyNone;
 }
@@ -205,7 +238,7 @@ void lcdscreen::timetick()
 {
   time_t clock = time(NULL);
   struct tm *result = localtime(&clock);
-  int actTime = result->tm_sec + result->tm_min*60 + result->tm_hour*3600;
+  int actTime = lcdscreen::toTimeInSeconds(result);
 
   if( actTime!=m_lastTime )
   {
@@ -215,14 +248,17 @@ void lcdscreen::timetick()
     m_ticks = 0;
 
     // this is now a second timer...
-    keyType key = secTimer(result);
+    keyType key = secTimerHandler(result);
 
     if( (key!=eKeyNone) && (this==m_activeScreen) )
       handleKeyEvent(key);
 
-    // timeout for backlight is 20 secs
-    if( !m_debugMode ) BacklightTimer++;
-    if( BacklightTimer==60 ) setBacklightState(eOff);
+    if( this==m_activeScreen )
+    {
+      // only the active screen may handle the timeout for backlight (60 secs)
+      if( !m_debugMode ) BacklightTimer++;
+      if( BacklightTimer==60 ) setBacklightState(eOff);
+    }
   }
   else
     m_ticks++;
@@ -232,6 +268,11 @@ void lcdscreen::repaint()
 {
   m_repaint = true;
   //printf("repaint()\n");
+}
+
+bool lcdscreen::isActive()
+{
+  return m_isActive;
 }
 
 keyType lcdscreen::keyEvent( keyType key )
@@ -278,8 +319,8 @@ keyType lcdscreen::keyEvent( keyType key )
       {
         editText = -1;
         dumpObjectList();
-        repaint();
       }
+      repaint();
     }
     else
       setBacklightState(eToggle);
@@ -313,29 +354,29 @@ void lcdscreen::handleKeyEvent( keyType key )
 {
   switch( key )
   {
-  case eKeyPrev:
-  {
-    screenmap::iterator it = m_screens.find(m_activeId);
-    if( it!=m_screens.end() )
+    case eKeyPrev:
     {
-      --it;
-      activateScreen(it->first);
+      screenmap::iterator it = m_screens.find(m_activeId);
+      if( it!=m_screens.end() )
+      {
+        --it;
+        activateScreen(it->first);
+      }
     }
-  }
     break;
-  case eKeyNext:
-  {
-    screenmap::iterator it = m_screens.find(m_activeId);
-    if( it!=m_screens.end() )
+    case eKeyNext:
     {
-      ++it;
-      activateScreen(it->first);
+      screenmap::iterator it = m_screens.find(m_activeId);
+      if( it!=m_screens.end() )
+      {
+        ++it;
+        activateScreen(it->first);
+      }
     }
-  }
     break;
   case eKeyCancel:
     activatePrevious();
-    //ret = m_activeScreen->keyEvent(ret);
+    m_activeScreen->keyEvent(key);
     break;
   default:
     break;
@@ -400,4 +441,27 @@ void lcdscreen::dumpObjectList()
         m_objectList[i].x,m_objectList[i].y,m_objectList[i].w,m_objectList[i].h,
         m_objectList[i].fontSize,m_objectList[i].text);
   }
+}
+
+int lcdscreen::toTimeInSeconds( struct tm *result )
+{
+  int ret = 0;
+  ret = result->tm_sec + result->tm_min*60 + result->tm_hour*3600
+      + result->tm_mday*86400 + result->tm_mon*2678400 + (result->tm_year-100)*32140800;
+  return ret;
+}
+
+struct tm *lcdscreen::fromTimeInSeconds( int seconds )
+{
+  static struct tm retval;
+  retval.tm_year = seconds / 32140800;   seconds %= 32140800;
+  retval.tm_mon =  seconds / 2678400;   seconds %= 2678400;
+  retval.tm_mday = seconds / 86400;   seconds %= 86400;
+  retval.tm_hour = seconds / 3600;   seconds %= 3600;
+  retval.tm_min =  seconds / 60;   seconds %= 60;
+  retval.tm_sec =  seconds;
+
+  retval.tm_year += 100;
+
+  return &retval;
 }

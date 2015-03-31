@@ -22,13 +22,20 @@ HEADERS += bcm2835.h \
     lcdscreen.h \
     lcdscreenmain.h \
     lcdscreencpu.h \
-    lcdscreenabout.h
+    lcdscreenabout.h \
+    screenids.h \
+    lcdscreentimer.h \
+    lcdscreenselect.h \
+    lcdscreenmessages.h
 SOURCES += bcm2835.c lcd.c raspilcd.c \
            main.cpp \
     lcdscreen.cpp \
     lcdscreenmain.cpp \
     lcdscreencpu.cpp \
-    lcdscreenabout.cpp
+    lcdscreenabout.cpp \
+    lcdscreentimer.cpp \
+    lcdscreenselect.cpp \
+    lcdscreenmessages.cpp
 
 macx|win32{
     DEFINES += QT_EMULATION

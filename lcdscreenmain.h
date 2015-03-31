@@ -11,28 +11,40 @@
 
 #include "lcdscreen.h"
 
+typedef enum
+{
+  eNoAction,
+
+  eNoShutdown,
+  eShutDown,
+  eSelection
+} msgType;
+
 class lcdscreenmain : public lcdscreen
 {
 public:
   lcdscreenmain();
   virtual ~lcdscreenmain();
 
-protected:
-  virtual keyType secTimer(struct tm *result);
-  virtual keyType keyEventHandler( keyType key );
-
-private:
   void startRecording();
   void stopRecording();
   void startPlay(char *playfile);
   void stopPlay();
 
+protected:
+  virtual void activatedHandler();
+  virtual keyType secTimerHandler(struct tm *result);
+  virtual keyType keyEventHandler( keyType key );
+
+private:
   char m_recordfile[1024];
 
-  int m_recorId;
+  int m_recordId;
   int m_playId;
 
   int m_startTime;
+
+  msgType m_lastScreen;
 };
 
 #endif // LCDSCREENMAIN_H

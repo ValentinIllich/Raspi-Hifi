@@ -13,6 +13,10 @@
 #include <map>
 #include <list>
 
+#define DEFAULT_SCREEN_ID   0
+
+#define	PIN_SWITCHER_OUT	9
+
 extern "C"
 {
 #include "std_c.h"
@@ -83,25 +87,38 @@ public:
 
   static void activatePrevious();
   static void activateScreen( int id );
-  static void setBacklightState( backlightState state );
+  static lcdscreen *getScreen( int id );
 
+  static void setBacklightState( backlightState state );
   static void setDebuMode( bool on );
+
+  static int toTimeInSeconds( struct tm *result );
+  static struct tm *fromTimeInSeconds( int seconds );
 
 protected:
   // to be overridden
-  virtual keyType secTimer(struct tm *result);
+  virtual void activatedHandler();
+  virtual void deactivatedHandler();
+  virtual keyType secTimerHandler(struct tm *result);
   virtual keyType keyEventHandler( keyType key );
   virtual void paintEvent();
 
   // to be called by derived classes
   virtual void repaint();
 
+  // info methods
+  virtual bool isActive();
+
 private:
   static void activateScreen( lcdscreen *screen );
 
+  virtual void activated();
+  virtual void deactivated();
   virtual void drawContents();
   virtual void timetick();
   virtual keyType keyEvent( keyType key );
+
+  // called internally
   virtual void handleKeyEvent( keyType key );
 
   void DemoGridIncDec( int df, int dx, int dy );
@@ -112,6 +129,7 @@ private:
   int m_lastTime;
   int m_ticks;
   bool m_repaint;
+  bool m_isActive;
 
   static bool m_debugMode;
   static screenmap m_screens;

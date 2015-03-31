@@ -19,7 +19,7 @@ public:
 
 protected:
   virtual void paintEvent();
-  virtual keyType secTimer(struct tm *result);
+  virtual keyType secTimerHandler(struct tm *result);
   virtual keyType keyEventHandler( keyType key );
 
 private:

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include "lcdscreencpu.h"
+#include "screenids.h"
 
 char	TempString[32];
 uint16	DemoMem[256];
@@ -24,7 +25,7 @@ lcdscreencpu::lcdscreencpu()
   uint8 i;
   for(i=0;i<128;i++)  DemoMem[i] = 0;
 
-  setupScreen(1,this);
+  setupScreen(CPUTEMP_SCREEN,this);
 }
 
 lcdscreencpu::~lcdscreencpu()
@@ -63,7 +64,7 @@ void lcdscreencpu::paintEvent()
   }
 }
 
-keyType lcdscreencpu::secTimer(struct tm */*result*/)
+keyType lcdscreencpu::secTimerHandler(struct tm */*result*/)
 {
   FILE *fp;
   unsigned int temp;
@@ -102,10 +103,10 @@ keyType lcdscreencpu::keyEventHandler( keyType key )
   switch( key )
   {
   case eKeyA:
-    lcdscreen::activateScreen(0);
-    break;
   case eKeyB:
-    lcdscreen::activateScreen(2);
+  case eKeyC:
+  case eKeyD:
+    return eKeyCancel;
     break;
   default:
     break;

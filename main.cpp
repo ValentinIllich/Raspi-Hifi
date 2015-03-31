@@ -56,13 +56,17 @@ int main(int argc, char **argv)
 
   //	DemoView = 0;
   //	DemoBubblesInit();
-  lcdscreen::activateScreen(0);
+  lcdscreen::activateScreen(DEFAULT_SCREEN_ID);
 
 #ifdef QT_EMULATION
   QtEmulation_Init();
   app.exec();
   QtEmulation_Exit();
   running = false;
+#endif
+
+#ifndef QT_EMULATION
+  bcm2835_gpio_fsel(PIN_SWITCHER_OUT,BCM2835_GPIO_FSEL_OUTP);	// GPIO18 Output: Backlight
 #endif
 
   while(running)
