@@ -1,5 +1,5 @@
-// Filename:    lcdscreenabout
-// Description: shows program information screen
+// Filename:    lcdscreentimer
+// Description: handling of up to 5 timers: setting times / doing switching / starting, stopping records
 //
 // Open Source Licensing GPL 3
 //
@@ -12,6 +12,7 @@
 
 #include "lcdscreentimer.h"
 #include "lcdscreenmain.h"
+#include "lcdscreenedit.h"
 #include "screenids.h"
 
 static char timerText1[128];
@@ -47,7 +48,6 @@ lcdscreentimer::lcdscreentimer()
   , m_lastSwitcherState(false)
   , m_lastRecordState(false)
   , m_selectedTime(0)
-  , m_selectedPos(-1)
   , m_editMode(false)
 {
   lcdscreen::setupScreen(TIMER_SCREEN,&timerscreen);
@@ -174,9 +174,6 @@ keyType lcdscreentimer::keyEventHandler( keyType key )
   case eKeyA:
     if( m_editMode )
     {
-      if( m_selectedPos>0 )
-        m_selectedPos--;
-      repaint();
     }
     else
       return eKeyCancel;
@@ -184,8 +181,6 @@ keyType lcdscreentimer::keyEventHandler( keyType key )
   case eKeyB:
     if( m_editMode )
     {
-      if( m_selectedPos<19 )
-        m_selectedPos++;
     }
     else
     {
@@ -208,17 +203,23 @@ keyType lcdscreentimer::keyEventHandler( keyType key )
       {
         if( m_timerStart[m_selectedTime]==-1 )
         {
-          m_timercount = m_selectedTime+1;
-          strcpy(timerTextEdit,"26.03.15 10:05-10:07");
+          lcdscreenedit::setInputString("");
         }
         else
-          strcpy(timerTextEdit,timerText[m_selectedTime]);
+          lcdscreenedit::setInputString(timerText[m_selectedTime]);
       }
-      m_selectedPos = 0;
+//      else
+//        lcdscreenedit::setInputString("");
+      lcdscreen::activateScreen(EDIT_SCREEN);
     }
-    else
+    repaint();
+    break;
+  case eKeyCancel:
+    if( strlen(lcdscreenedit::getInputString())>0 )
     {
-      if( !scantimerSetting(timerTextEdit,m_selectedTime) )
+      if( !scantimerSetting(lcdscreenedit::getInputString(),m_selectedTime) )
+//        m_timercount = m_selectedTime+1;
+//      else
         m_timerStart[m_selectedTime] = m_timerStop[m_selectedTime] = -1;
 
       FILE *fp = fopen("/home/pi/usbstick/timer.txt","w");
@@ -239,21 +240,16 @@ keyType lcdscreentimer::keyEventHandler( keyType key )
       }
       else
         fprintf(stderr,"+++ could not write timer file!\n");
-      m_editMode = false;
-      activatedHandler();
     }
-    repaint();
+    m_editMode = false;
+    activatedHandler();
     break;
   case eKeyUp:
-    if( m_editMode )
-      incdecChar(timerTextEdit,m_selectedPos,+1);
-    else if( m_selectedTime>=0 ) m_selectedTime--;
+    if( m_selectedTime>=0 ) m_selectedTime--;
     repaint();
     break;
   case eKeyDown:
-    if( m_editMode )
-      incdecChar(timerTextEdit,m_selectedPos,-1);
-    else if( m_selectedTime<4 ) m_selectedTime++;
+    if( m_selectedTime<4 ) m_selectedTime++;
     repaint();
     break;
   default:
@@ -263,78 +259,18 @@ keyType lcdscreentimer::keyEventHandler( keyType key )
   return eKeyNone;
 }
 
-char *lcdscreentimer::substring( char *str, int start, int len )
+/*char *lcdscreentimer::substring( char *str, int start, int len )
 {
-  strcpy( m_substring, str+start );
-  m_substring[len] = 0x0;
-
-  return m_substring;
 }
 
 void lcdscreentimer::incdecChar( char *str, int pos, int delta )
 {
-  char actual = str[pos];
-
-  switch( actual )
-  {
-  case '0':
-    if( delta>0 )
-      actual += delta;
-    else
-      actual = '-';
-    break;
-  case '1':
-  case '2':
-  case '3':
-  case '4':
-  case '5':
-  case '6':
-  case '7':
-  case '8':
-    actual += delta;
-    break;
-  case '9':
-    if( delta>0 )
-      actual = '0';
-    else
-      actual += delta;
-    break;
-  case '-':
-    if( delta>0 )
-      actual = '0';
-    break;
-  case '.':
-    break;
-  }
-
-  str[pos] = actual;
-}
+}*/
 
 void lcdscreentimer::paintEvent()
 {
   if( m_editMode )
   {
-//    LCD_SetFont(0);
-//    LCD_PrintXY(0, 0,timerText1);
-    LCD_SetFont(1);
-    LCD_PrintXY(30,10,substring(timerTextEdit,0,9));
-    LCD_PrintXY(20,26,substring(timerTextEdit,9,11));
-
-    int x = 0, y = 0, dx = 8, dy = 14;
-    if( m_selectedPos<9 )
-    {
-      x = 30+m_selectedPos*8; y = 10;
-    }
-    else
-    {
-      x = 20+(m_selectedPos-9)*8, y = 26;
-    }
-    LCD_SetPenColor(1);
-    LCD_DrawLine(x,y,x+dx,y);
-    LCD_DrawLine(x+dx,y,x+dx,y+dy);
-    LCD_DrawLine(x+dx,y+dy,x,y+dy);
-    //LCD_DrawLine(x,y+dy,x,y); // does not really work ?
-    LCD_DrawLine(x,y,x,y+dy);
   }
   else
   {
@@ -359,102 +295,40 @@ void lcdscreentimer::paintEvent()
 
 bool lcdscreentimer::scantimerSetting( const char *source, int editedTime )
 {
-  // "15.03.2015 10:05-10:07"
-  char setting[128];
-
-  strcpy(setting,source);
-
-  if( setting[0]=='-' ) return false;
-
-  if( setting[2]!='.' ) return false; else setting[2]=0x0;
-  if( setting[5]!='.' ) return false; else setting[5]=0x0;
-
-  if( editedTime>=0 )
-  {
-    if( setting[8]!=' ' ) return false; else setting[8]=0x0;
-  }
-  else
-  {
-    if( setting[10]!=' ' ) return false; else setting[10]=0x0;
-  }
-
-  if( editedTime>=0 )
-  {
-    if( setting[11]!=':' ) return false; else setting[11]=0x0;
-  }
-  else
-  {
-    if( setting[13]!=':' ) return false; else setting[13]=0x0;
-  }
-
-  if( editedTime>=0 )
-  {
-    if( setting[14]!='-' ) return false; else setting[14]=0x0;
-  }
-  else
-  {
-    if( setting[16]!='-' ) return false; else setting[16]=0x0;
-  }
-
-  if( editedTime>=0 )
-  {
-    if( setting[17]!=':' ) return false; else setting[17]=0x0;
-  }
-  else
-  {
-    if( setting[19]!=':' ) return false; else setting[19]=0x0;
-  }
+  bool ret = true;
 
   struct tm start;
-  start.tm_mday = atoi(setting);
-  start.tm_mon = atoi(setting+3) - 1;
-  if( editedTime>=0 )
-  {
-    start.tm_year = atoi(setting+6) + 100;
-    start.tm_hour = atoi(setting+9);
-    start.tm_min = atoi(setting+12);
-  }
-  else
-  {
-    start.tm_year = atoi(setting+6) - 1900;
-    start.tm_hour = atoi(setting+11);
-    start.tm_min = atoi(setting+14);
-  }
-  start.tm_sec = 0;
-
-  struct tm stop = start;
-  if( editedTime>=0 )
-  {
-    stop.tm_hour = atoi(setting+15);
-    stop.tm_min = atoi(setting+18);
-  }
-  else
-  {
-    stop.tm_hour = atoi(setting+17);
-    stop.tm_min = atoi(setting+20);
-  }
+  struct tm stop;
 
   if( editedTime>=0 )
-  {
-    m_timerStart[editedTime] = lcdscreen::toTimeInSeconds(&start);
-    m_timerStop[editedTime] = lcdscreen::toTimeInSeconds(&stop);
-
-    if( m_timerStop[editedTime] < m_timerStart[editedTime] )
-      m_timerStop[editedTime] += 86400;
-  }
+    ret = lcdscreenedit::scantimerSetting(source,editFormatStartStopShort,start,stop);
   else
+    ret = lcdscreenedit::scantimerSetting(source,editFormatStartStopLong,start,stop);
+
+  if( ret )
   {
-    m_timerStart[m_timercount] = lcdscreen::toTimeInSeconds(&start);
-    m_timerStop[m_timercount] = lcdscreen::toTimeInSeconds(&stop);
+    if( editedTime>=0 )
+    {
+      m_timerStart[editedTime] = lcdscreen::toTimeInSeconds(&start);
+      m_timerStop[editedTime] = lcdscreen::toTimeInSeconds(&stop);
 
-    if( m_timerStop[m_timercount] < m_timerStart[m_timercount] )
-      m_timerStop[m_timercount] += 86400;
+      if( m_timerStop[editedTime] < m_timerStart[editedTime] )
+        m_timerStop[editedTime] += 86400;
+    }
+    else
+    {
+      m_timerStart[m_timercount] = lcdscreen::toTimeInSeconds(&start);
+      m_timerStop[m_timercount] = lcdscreen::toTimeInSeconds(&stop);
 
-    m_timercount++;
+      if( m_timerStop[m_timercount] < m_timerStart[m_timercount] )
+        m_timerStop[m_timercount] += 86400;
 
-    if( m_timercount==5 )
-      return true;
+      m_timercount++;
+
+      if( m_timercount==5 )
+        return true;
+    }
   }
 
-  return true;
+  return ret;
 }

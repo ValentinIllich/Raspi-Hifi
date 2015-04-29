@@ -1,3 +1,11 @@
+// Filename:    lcdscreenmessages.h
+// Description: showing shutdown message / ignore warning
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #include "lcdscreenmessages.h"
 #include "screenids.h"
 
@@ -35,7 +43,7 @@ keyType lcdscreenmessages::secTimerHandler(struct tm *result)
 
 static objectinfo strings[] = {
   { eText,true ,17,17,  0, 0, 1,"Power Down ?" },
-  { eText,true,  0,56,  0, 0,  0,"Power          Cancel" },
+  { eText,true,  0,56,  0, 0,  0," Yes           Cancel" },
   { eNone,false, 0,0,0,0,  0,NULL },
 };
 
@@ -55,6 +63,9 @@ keyType lcdscreenShutdown::keyEventHandler( keyType key )
   switch( key )
   {
   case eKeyA:
+    strings[0].text = "Shut Down...";
+    strings[1].text = "";
+    repaint();
     system("sudo umount /dev/sda1");
     system("sudo shutdown -h now");
     break;

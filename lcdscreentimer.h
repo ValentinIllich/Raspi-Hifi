@@ -1,5 +1,5 @@
-// Filename:    lcdscreenabout
-// Description: shows program information screen
+// Filename:    lcdscreentimer
+// Description: handling of up to 5 timers: setting times / doing switching / starting, stopping records
 //
 // Open Source Licensing GPL 3
 //
@@ -26,8 +26,8 @@ protected:
   virtual void paintEvent();
 
 private:
-  char *substring( char *str, int start, int len );
-  void incdecChar( char *str, int pos, int delta );
+//  char *substring( char *str, int start, int len );
+//  void incdecChar( char *str, int pos, int delta );
   bool scantimerSetting( const char *source, int editedTime = -1 );
 
   static bool m_timerActive;
@@ -42,10 +42,7 @@ private:
   bool m_lastRecordState;
 
   int m_selectedTime;
-  int m_selectedPos;
   bool m_editMode;
-
-  char m_substring[128];
 };
 
 #endif // LCDSCREENTIMER_H

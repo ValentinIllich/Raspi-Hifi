@@ -1,3 +1,11 @@
+// Filename:    lcdscreenmessages.h
+// Description: showing shutdown message / ignore warning
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #ifndef LCDSCREENMESSAGES_H
 #define LCDSCREENMESSAGES_H
 

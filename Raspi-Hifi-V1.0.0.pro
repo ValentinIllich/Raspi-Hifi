@@ -26,7 +26,8 @@ HEADERS += bcm2835.h \
     screenids.h \
     lcdscreentimer.h \
     lcdscreenselect.h \
-    lcdscreenmessages.h
+    lcdscreenmessages.h \
+    lcdscreenedit.h
 SOURCES += bcm2835.c lcd.c raspilcd.c \
            main.cpp \
     lcdscreen.cpp \
@@ -35,7 +36,8 @@ SOURCES += bcm2835.c lcd.c raspilcd.c \
     lcdscreenabout.cpp \
     lcdscreentimer.cpp \
     lcdscreenselect.cpp \
-    lcdscreenmessages.cpp
+    lcdscreenmessages.cpp \
+    lcdscreenedit.cpp
 
 macx|win32{
     DEFINES += QT_EMULATION

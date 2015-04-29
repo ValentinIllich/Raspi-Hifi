@@ -1,3 +1,11 @@
+// Filename:    lcdscreenselect.h
+// Description: retreiving a wav file list and selecting a file out of this list
+//
+// Open Source Licensing GPL 3
+//
+// Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
+//--------------------------------------------------------------------------------------------------
+
 #ifndef LCDSCREENSELECT_H
 #define LCDSCREENSELECT_H
 

@@ -7,12 +7,13 @@
 //--------------------------------------------------------------------------------------------------
 
 #include "lcdscreenabout.h"
+#include "lcdscreenedit.h"
 #include "bmp_raspi.inc"
 
 #include "screenids.h"
 
 static objectinfo strings[] = {
-  { eText,true,  54,56,  0, 0,  0,"Help    Info" },
+  { eText,true,  50,56,  0, 0,  0,"Clock    Info" },
 
   { eNone,false, 0,0,0,0,  0,NULL },
 };
@@ -58,13 +59,33 @@ keyType lcdscreenabout::secTimerHandler(struct tm */*result*/)
 
 keyType lcdscreenabout::keyEventHandler( keyType key )
 {
+  char currentTime[64];
   switch( key )
   {
   case eKeyA:
     lcdscreen::activateScreen(RECORD_PLAY_SCREEN);
     break;
   case eKeyB:
-    //lcdscreen::activateScreen(2);
+    {
+      time_t clock = time(NULL);
+      struct tm start = *localtime(&clock);
+      sprintf(currentTime,"%02d.%02d.%02d  %02d:%02d:%02d",
+              start.tm_mday,start.tm_mon+1,start.tm_year-100,start.tm_hour,start.tm_min,start.tm_sec);
+      lcdscreenedit::setInputString(currentTime);
+      lcdscreen::activateScreen(EDIT_SCREEN);
+      //lcdscreen::activateScreen(2);
+    }
+    break;
+  case eKeyCancel:
+    if( strlen(lcdscreenedit::getInputString())>0 )
+    {
+      struct tm start, stop;
+      if( lcdscreenedit::scantimerSetting(lcdscreenedit::getInputString(),editFotmatSettingTime,start,stop) )
+      {
+        // set system time / real time clock
+        return eKeyCancel;
+      }
+    }
     break;
   case eKeyC:
     lcdscreen::activateScreen(CPUTEMP_SCREEN);
