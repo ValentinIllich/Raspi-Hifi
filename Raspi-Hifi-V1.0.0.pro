@@ -39,6 +39,10 @@ SOURCES += bcm2835.c lcd.c raspilcd.c \
     lcdscreenmessages.cpp \
     lcdscreenedit.cpp
 
+target.path = install
+target.files = *.pro Makefile *.h *c *.cpp *.inc
+INSTALLS += target
+
 macx|win32{
     DEFINES += QT_EMULATION
     LIBS -= -lrt

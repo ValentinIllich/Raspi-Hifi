@@ -6,6 +6,10 @@
 // Author:      Dr. Valentin Illich, www.valentins-qtsolutions.de
 //--------------------------------------------------------------------------------------------------
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 #include "lcdscreenabout.h"
 #include "lcdscreenedit.h"
 #include "bmp_raspi.inc"
@@ -13,6 +17,7 @@
 #include "screenids.h"
 
 static objectinfo strings[] = {
+  { eText,true,   0,56,  0, 0,  0,"Back" },
   { eText,true,  50,56,  0, 0,  0,"Clock    Info" },
 
   { eNone,false, 0,0,0,0,  0,NULL },
@@ -82,7 +87,12 @@ keyType lcdscreenabout::keyEventHandler( keyType key )
       struct tm start, stop;
       if( lcdscreenedit::scantimerSetting(lcdscreenedit::getInputString(),editFotmatSettingTime,start,stop) )
       {
-        // set system time / real time clock
+        // set system time / real time clock <hwclock --set --date="2015-05-03 19:28:00">
+        sprintf(currentTime,"sudo hwclock --set --date=\"%04d-%02d-%02d %02d:%02d:%02d\"",
+                start.tm_year+1900,start.tm_mon+1,start.tm_mday,start.tm_hour,start.tm_min,start.tm_sec
+                );
+        system(currentTime);
+        system("sudo hwclock -s");
         return eKeyCancel;
       }
     }

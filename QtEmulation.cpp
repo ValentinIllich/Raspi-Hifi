@@ -13,16 +13,25 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QMessageBox>
+#include <QClipboard>
 
 static RaspiLcdWidget *m_window = NULL;
 
 #define marginx  15
 #define marginy  15
 
+QColor m_background = Qt::lightGray;
+
 RaspiLcdWidget::RaspiLcdWidget( QWidget *parent )
   : QWidget(parent)
   , m_image(128,64,QImage::Format_Mono)
 {
+  QRgb value;
+  value = m_background.rgb();
+  m_image.setColor(0, value);
+  value = QColor(Qt::black).rgb();
+  m_image.setColor(1, value);
+
   QRadioButton *butA = new QRadioButton(this);
   butA->move(24+marginx,160+marginy);
   butA->setCheckable(false);
@@ -69,6 +78,14 @@ void RaspiLcdWidget::timerEvent ( QTimerEvent */*event*/ )
   lcdscreen::updateTimer();
 }
 
+void RaspiLcdWidget::mouseDoubleClickEvent ( QMouseEvent * /*event*/ )
+{
+  QClipboard *clip = QApplication::clipboard();
+  QPixmap hcop = QPixmap::grabWidget(this);
+  hcop.save("xxx.png");
+  if( clip ) clip->setPixmap(hcop/*QPixmap::fromImage(m_image).scaled(256,128)*/);
+}
+
 void RaspiLcdWidget::buttonApressed()
 {
   lcdscreen::keyPressed(eKeyA);
@@ -110,8 +127,8 @@ void QtEmulation_Exit()
 
 /////////////////////////////////////////////////////////////////////
 
-QColor m_pencol = Qt::color0;
-QColor m_fillcol = Qt::color1;
+QColor m_pencol = Qt::black;
+QColor m_fillcol = Qt::white;
 
 void Qt_ClearScreen(void)
 {
@@ -121,12 +138,12 @@ void Qt_ClearScreen(void)
 
 void Qt_SetPenColor(uint8 c)
 {
-  m_pencol = c ? Qt::color0 : Qt::color1;
+  m_pencol = c ? Qt::black : Qt::white;
 }
 
 void Qt_SetFillColor(int8 c)
 {
-  m_fillcol = c ? Qt::color0 : Qt::color1;
+  m_fillcol = c ? Qt::black : Qt::white;
 }
 
 void Qt_SetContrast(uint8 /*contrast*/)
@@ -135,7 +152,7 @@ void Qt_SetContrast(uint8 /*contrast*/)
 
 void Qt_PutPixel(uint8 x,uint8 y,uint8 color)
 {
-  m_window->m_image.setPixel(x, y, color ? Qt::color1 : Qt::color0);
+  m_window->m_image.setPixel(x, y, color ? 1 : 0);
   //m_window->repaint();
 }
 
@@ -174,4 +191,17 @@ void Qt_DrawRect(uint8 x0,uint8 y0,uint8 x1,uint8 y1,uint8 /*line*/)
 void Qt_WriteFramebuffer(void)
 {
   m_window->repaint();
+}
+
+void Qt_SetBacklight(uint8 light)
+{
+  if( light )
+    m_background = QColor(Qt::white);
+  else
+    m_background = QColor(Qt::lightGray);
+  if( m_window )
+  {
+    m_window->m_image.setColor(0,m_background.rgb());
+    m_window->repaint();
+  }
 }

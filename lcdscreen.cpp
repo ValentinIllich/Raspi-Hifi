@@ -16,8 +16,24 @@ bool lcdscreen::m_debugMode = false;
 int lcdscreen::m_activeId = 0;
 lcdscreen *lcdscreen::m_activeScreen = 0;
 
-screenmap lcdscreen::m_screens;
-screenlist lcdscreen::m_screenQueue;
+screenmap *lcdscreen::m_screens = NULL;
+screenlist *lcdscreen::m_screenQueue = NULL;
+
+screenmap *lcdscreen::getScreenList()
+{
+  if( m_screens==NULL )
+    m_screens = new screenmap();
+
+  return m_screens;
+}
+screenlist *lcdscreen::getScreenQueue()
+{
+  if( m_screenQueue==NULL )
+    m_screenQueue = new screenlist();
+
+  return m_screenQueue;
+}
+
 
 lcdscreen::lcdscreen(objectinfo *objects)
   : m_objectList(objects)
@@ -42,8 +58,8 @@ void lcdscreen::updateDisplay()
 void lcdscreen::updateTimer()
 {
   //if( m_activeScreen ) m_activeScreen->timetick();
-  screenmap::iterator it = m_screens.begin();
-  while( it!=m_screens.end() )
+  screenmap::iterator it = getScreenList()->begin();
+  while( it!=getScreenList()->end() )
   {
     it->second->timetick();
     ++it;
@@ -75,19 +91,19 @@ keyType lcdscreen::keyPressed( keyType key )
 
 void lcdscreen::setupScreen( int id, lcdscreen *screen )
 {
-  screenmap::iterator it = m_screens.find(id);
-  if( it==m_screens.end() )
-    m_screens[id] = screen;
+  screenmap::iterator it = getScreenList()->find(id);
+  if( it==getScreenList()->end() )
+    (*getScreenList())[id] = screen;
 }
 
 void lcdscreen::activatePrevious()
 {
-  if( m_screenQueue.size()>0 )
+  if( getScreenQueue()->size()>0 )
   {
-    int id = m_screenQueue.back();
-    m_screenQueue.pop_back();
-    screenmap::iterator it = m_screens.find(id);
-    if( it!=m_screens.end() )
+    int id = getScreenQueue()->back();
+    getScreenQueue()->pop_back();
+    screenmap::iterator it = getScreenList()->find(id);
+    if( it!=getScreenList()->end() )
     {
       activateScreen(it->second);
       m_activeId = id;
@@ -98,10 +114,10 @@ void lcdscreen::activatePrevious()
 void lcdscreen::activateScreen( int id )
 {
   printf("activeScreen %d\n",id);
-  screenmap::iterator it = m_screens.find(id);
-  if( it!=m_screens.end() )
+  screenmap::iterator it = getScreenList()->find(id);
+  if( it!=getScreenList()->end() )
   {
-    m_screenQueue.push_back(m_activeId);
+    getScreenQueue()->push_back(m_activeId);
     activateScreen(it->second);
     m_activeId = id;
   }
@@ -125,8 +141,8 @@ void lcdscreen::activateScreen( lcdscreen *screen )
 
 lcdscreen *lcdscreen::getScreen( int id )
 {
-  screenmap::iterator it = m_screens.find(id);
-  if( it!=m_screens.end() )
+  screenmap::iterator it = getScreenList()->find(id);
+  if( it!=getScreenList()->end() )
     return it->second;
 
   return NULL;
@@ -356,8 +372,8 @@ void lcdscreen::handleKeyEvent( keyType key )
   {
     case eKeyPrev:
     {
-      screenmap::iterator it = m_screens.find(m_activeId);
-      if( it!=m_screens.end() )
+      screenmap::iterator it = getScreenList()->find(m_activeId);
+      if( it!=getScreenList()->end() )
       {
         --it;
         activateScreen(it->first);
@@ -366,8 +382,8 @@ void lcdscreen::handleKeyEvent( keyType key )
     break;
     case eKeyNext:
     {
-      screenmap::iterator it = m_screens.find(m_activeId);
-      if( it!=m_screens.end() )
+      screenmap::iterator it = getScreenList()->find(m_activeId);
+      if( it!=getScreenList()->end() )
       {
         ++it;
         activateScreen(it->first);

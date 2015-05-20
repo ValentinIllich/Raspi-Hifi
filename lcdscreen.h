@@ -110,6 +110,8 @@ protected:
   virtual bool isActive();
 
 private:
+  static screenmap *getScreenList();
+  static screenlist *getScreenQueue();
   static void activateScreen( lcdscreen *screen );
 
   virtual void activated();
@@ -132,8 +134,8 @@ private:
   bool m_isActive;
 
   static bool m_debugMode;
-  static screenmap m_screens;
-  static screenlist m_screenQueue;
+  static screenmap *m_screens;
+  static screenlist *m_screenQueue;
 
   static int m_activeId;
   static lcdscreen *m_activeScreen;

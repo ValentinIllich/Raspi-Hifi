@@ -31,20 +31,20 @@ int main(int argc, char **argv)
 {
 #ifdef  QT_EMULATION
   QApplication app(argc,argv);
+#else
+    signal(SIGTERM, (sighandler_t)terminateHandler);
+    // avoid zombie processes...
+    if (signal(SIGCHLD, SIG_IGN) == SIG_ERR)
+    {
+      perror(0);
+      exit(1);
+    }
 #endif
 
   if( argc>1 )
   {
     if( strcmp(argv[1],"-debug")==0 )
       lcdscreen::setDebuMode(true);
-  }
-
-  signal(SIGTERM, (sighandler_t)terminateHandler);
-  // avoid zombie processes...
-  if (signal(SIGCHLD, SIG_IGN) == SIG_ERR)
-  {
-    perror(0);
-    exit(1);
   }
 
   printf("Raspi Hifi Recorder V1.0.0 by Valentin Illich [" __DATE__ " " __TIME__"]\n");

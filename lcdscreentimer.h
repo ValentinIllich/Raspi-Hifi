@@ -29,6 +29,7 @@ private:
 //  char *substring( char *str, int start, int len );
 //  void incdecChar( char *str, int pos, int delta );
   bool scantimerSetting( const char *source, int editedTime = -1 );
+  void switchPower( bool switcherAutoState, bool switcherManuState );
 
   static bool m_timerActive;
 
@@ -38,11 +39,14 @@ private:
   int m_timerStop[5];
   int m_timercount;
 
-  bool m_lastSwitcherState;
+  bool m_lastSwitcherAutoState;
+  bool m_lastSwitcherManuState;
   bool m_lastRecordState;
 
   int m_selectedTime;
   bool m_editMode;
+
+  int m_timerSeconds;
 };
 
 #endif // LCDSCREENTIMER_H

@@ -28,6 +28,7 @@ public:
 protected:
   virtual void paintEvent( QPaintEvent *event );
   virtual void timerEvent ( QTimerEvent * event );
+  virtual void mouseDoubleClickEvent ( QMouseEvent * event );
 
 private slots:
   void buttonApressed();
@@ -61,6 +62,8 @@ void Qt_DrawBitmap(uint8 x0,uint8 y0,const uint8 *bmp);
 
 void Qt_Init(void);
 void Qt_WriteFramebuffer(void);
+
+void Qt_SetBacklight(uint8 light);
 
 #ifdef __cplusplus
 }

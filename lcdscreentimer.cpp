@@ -21,8 +21,6 @@ static char timerText3[128];
 static char timerText4[128];
 static char timerText5[128];
 
-static char timerTextEdit[128];
-
 static char *timerText[] = { timerText1,timerText2,timerText3,timerText4,timerText5 };
 
 static objectinfo strings[] = {
@@ -32,8 +30,9 @@ static objectinfo strings[] = {
   { eText,true,   0,30,  0, 0,  0, "" },
   { eText,true,   0,40,  0, 0,  0, "" },
 
-  { eText,true,   0,56,  0, 0,  0," Back            Set" },
-  { eText,true,  54,56,  0, 0,  0,"" },
+  { eText,true,   0,56,  0, 0,  0," Back" },
+  { eText,true,  54,56,  0, 0,  0,"" }, // Manu / Auto Display
+  { eText,true, 100,56,  0, 0,  0,"" }, // Set / On/Off Display
   { eNone,false, 0,0,0,0,  0,NULL },
 };
 
@@ -45,10 +44,12 @@ lcdscreentimer::lcdscreentimer()
   : lcdscreen(strings)
   , m_updateTimerSettings(false)
   , m_timercount(0)
-  , m_lastSwitcherState(false)
+  , m_lastSwitcherAutoState(true)
+  , m_lastSwitcherManuState(false)
   , m_lastRecordState(false)
   , m_selectedTime(0)
   , m_editMode(false)
+  , m_timerSeconds(-1)
 {
   lcdscreen::setupScreen(TIMER_SCREEN,&timerscreen);
   m_updateTimerSettings = true;
@@ -66,10 +67,21 @@ bool lcdscreentimer::timerActive()
 void lcdscreentimer::activatedHandler()
 {
   if( m_timerActive )
-    strings[6].text = "Auto";
+  {
+    if( m_timerSeconds>=0 )
+      strings[6].text = "Wait";
+    else
+      strings[6].text = "Auto";
+
+    if( m_lastSwitcherManuState )
+      strings[7].text = ">Off";
+    else
+      strings[7].text = ">On";
+  }
   else
   {
     strings[6].text = "Manu";
+    strings[7].text = "Set";
     strings[6].visible = true;
   }
 
@@ -94,6 +106,18 @@ void lcdscreentimer::activatedHandler()
 keyType lcdscreentimer::secTimerHandler(struct tm *result)
 {
   int actualTimerSecs = lcdscreen::toTimeInSeconds(result);
+
+  if( m_timerSeconds>=0 )
+  {
+    m_timerSeconds++;
+
+    if( m_timerSeconds>10 )
+    {
+      switchPower(!m_timerActive, m_lastSwitcherManuState);
+      m_timerSeconds = -1;
+      activatedHandler();
+    }
+  }
 
   if( m_timerActive )
   {
@@ -141,17 +165,9 @@ keyType lcdscreentimer::secTimerHandler(struct tm *result)
         recordOn = true;
     }
 
-    if( switcherOn!=m_lastSwitcherState )
-    {
-      m_lastSwitcherState = switcherOn;
-      fprintf(stderr,"switching!\n");
-#ifndef QT_EMULATION
-      if( switcherOn )
-        bcm2835_gpio_clr(PIN_SWITCHER_OUT);
-      else
-        bcm2835_gpio_set(PIN_SWITCHER_OUT);
-#endif
-    }
+    if( m_timerSeconds==-1 )
+      switchPower(switcherOn, m_lastSwitcherManuState);
+
     if( recordOn!=m_lastRecordState )
     {
       m_lastRecordState = recordOn;
@@ -165,6 +181,38 @@ keyType lcdscreentimer::secTimerHandler(struct tm *result)
   }
 
   return eKeyNone;
+}
+
+void lcdscreentimer::switchPower( bool switcherAutoState, bool switcherManuState )
+{
+  bool update = false;
+
+  if( switcherAutoState!=m_lastSwitcherAutoState )
+  {
+    m_lastSwitcherAutoState = switcherAutoState;
+    update = true;
+  }
+  if( switcherManuState!=m_lastSwitcherManuState )
+  {
+    m_lastSwitcherManuState = switcherManuState;
+    update = true;
+  }
+
+  if( update )
+  {
+    bool state = m_lastSwitcherAutoState || m_lastSwitcherManuState;
+    fprintf(stderr,"switching %s!\n",state ? "On" : "Off");
+#ifndef QT_EMULATION
+    if( state )
+    {
+      bcm2835_gpio_clr(PIN_SWITCHER_OUT);
+    }
+    else
+    {
+      bcm2835_gpio_set(PIN_SWITCHER_OUT);
+    }
+#endif
+  }
 }
 
 keyType lcdscreentimer::keyEventHandler( keyType key )
@@ -185,32 +233,48 @@ keyType lcdscreentimer::keyEventHandler( keyType key )
     else
     {
       m_timerActive = !m_timerActive;
-  #ifndef QT_EMULATION
       if( m_timerActive )
-        bcm2835_gpio_set(PIN_SWITCHER_OUT);
+        m_timerSeconds = 0; // start timer for auto switching
       else
-        bcm2835_gpio_clr(PIN_SWITCHER_OUT);
-  #endif
+        switchPower(!m_timerActive, false);
       activatedHandler();
     }
     repaint();
     break;
   case eKeyC:
-    m_editMode = !m_editMode;
-    if( m_editMode )
+    if( m_timerActive )
     {
-      if( m_selectedTime>=0 )
+      m_timerSeconds = -1; // reset timer for auto switching
+      if( m_lastSwitcherManuState )
       {
-        if( m_timerStart[m_selectedTime]==-1 )
-        {
-          lcdscreenedit::setInputString("");
-        }
-        else
-          lcdscreenedit::setInputString(timerText[m_selectedTime]);
+        switchPower(m_lastSwitcherAutoState, false);
+        strings[7].text = "On";
       }
-//      else
-//        lcdscreenedit::setInputString("");
-      lcdscreen::activateScreen(EDIT_SCREEN);
+      else
+      {
+        switchPower(m_lastSwitcherAutoState, true);
+        strings[7].text = "Off";
+      }
+      activatedHandler();
+    }
+    else
+    {
+      m_editMode = !m_editMode;
+      if( m_editMode )
+      {
+        if( m_selectedTime>=0 )
+        {
+          if( m_timerStart[m_selectedTime]==-1 )
+          {
+            lcdscreenedit::setInputString("");
+          }
+          else
+            lcdscreenedit::setInputString(timerText[m_selectedTime]);
+        }
+  //      else
+  //        lcdscreenedit::setInputString("");
+        lcdscreen::activateScreen(EDIT_SCREEN);
+      }
     }
     repaint();
     break;

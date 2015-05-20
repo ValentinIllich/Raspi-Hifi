@@ -17,6 +17,10 @@
 #include <time.h>
 #include "raspilcd.h"
 
+#ifdef QT_EMULATION
+#include "QtEmulation.h"
+#endif
+
 //=== Preprocessing directives (#define) ===========================================================
 
 //=== Type definitions (typedef) ===================================================================
@@ -196,6 +200,7 @@ void SpiPutc(unsigned char d)
 void SetBacklight(uint8 light)
 {
 #ifdef QT_EMULATION
+  Qt_SetBacklight(light);
   return; // QT-Simul!
 #endif
   if(light)	bcm2835_gpio_set(PIN_LCD_BACKLIGHT);

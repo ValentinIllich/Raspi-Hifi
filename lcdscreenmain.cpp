@@ -11,23 +11,19 @@
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
-#include <sys/wait.h>
 
 #include "lcdscreenmain.h"
 #include "lcdscreentimer.h"
 #include "lcdscreenselect.h"
 #include "screenids.h"
 
-static objectinfo strings[] = {
-  { eText,true,  7, 0,  0, 0,  0,"31.01.2015 12:00:39" },
-  { eText,true,  0,56,  0, 0,  0,"Power           About" },
-  { eText,true, 48,56,  0, 0,  0,"Timer" },
-  { eText,true, 80, 9,  0, 0,  1,"Record" },
-  { eText,true, 96,38,  0, 0,  1,"Play" },
-  { eText,true, 17,24,  0, 0,  3,"--:--:--" },
-
-  { eNone,false, 0,0,0,0,  0,NULL },
-};
+#ifdef  QT_EMULATION
+int spawn (const char* /*program*/, const char** /*arg_list*/)
+{
+    return 0;
+}
+#else
+#include <sys/wait.h>
 
 int spawn (const char* program, const char** arg_list)
 {
@@ -46,6 +42,18 @@ int spawn (const char* program, const char** arg_list)
     _exit (-1);
   }
 }
+#endif
+
+static objectinfo strings[] = {
+  { eText,true,  7, 0,  0, 0,  0,"31.01.2015 12:00:39" },
+  { eText,true,  0,56,  0, 0,  0,"Power           About" },
+  { eText,true, 48,56,  0, 0,  0,"Timer" },
+  { eText,true, 80, 9,  0, 0,  1,"Record" },
+  { eText,true, 96,38,  0, 0,  1,"Play" },
+  { eText,true, 17,24,  0, 0,  3,"--:--:--" },
+
+  { eNone,false, 0,0,0,0,  0,NULL },
+};
 
 static lcdscreenmain mainscreen;
 
@@ -66,15 +74,8 @@ lcdscreenmain::~lcdscreenmain()
 
 int proc_exists(pid_t pid)
 {
-#if 0
-  static char procSpace[128];
-  sprintf(procSpace,"/proc/%d/maps",pid);
-  if( FILE *fp=fopen(procSpace,"rb") )
-  {
-    fclose(fp);
-    return 1;
-  }
-  return 0;
+#ifdef  QT_EMULATION
+  return pid;
 #else
   // this is a better method...
   if( kill(pid,0)==0 || errno==EPERM )
@@ -242,8 +243,10 @@ void lcdscreenmain::stopRecording()
 {
   if( m_recordId>=0 )
   {
+#ifndef  QT_EMULATION
     int ret = kill(m_recordId,SIGTERM);
     printf("record process killed: %d\n",ret);
+#endif
     m_recordId = -1;
     strings[3].visible=true;
     strings[5].text = "--:--:--";
@@ -271,9 +274,11 @@ void lcdscreenmain::stopPlay()
 {
   if( m_playId>=0 )
   {
+#ifndef  QT_EMULATION
     int ret = kill(m_playId,SIGTERM);
     printf("play process killed: %d\n",ret);
     m_playId = -1;
+#endif
     strings[4].visible=true;
     strings[5].text = "--:--:--";
     repaint();

@@ -36,7 +36,7 @@ keyType lcdscreenmessages::secTimerHandler(struct tm *result)
   if( (actualTime-m_startingSeconds)>10 )
     return eKeyCancel;
 
-  return eKeyNone;
+  return processSecTimer(result);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ static objectinfo strings[] = {
 
 static lcdscreenShutdown shutdown;
 
-lcdscreenShutdown::lcdscreenShutdown() : lcdscreenmessages(strings)
+lcdscreenShutdown::lcdscreenShutdown() : lcdscreenmessages(strings), m_shutdown(false)
 {
   lcdscreen::setupScreen(POWER_SCREEN,&shutdown);
 }
@@ -65,9 +65,8 @@ keyType lcdscreenShutdown::keyEventHandler( keyType key )
   case eKeyA:
     strings[0].text = "Shut Down...";
     strings[1].text = "";
+    m_shutdown = true;
     repaint();
-    system("sudo umount /dev/sda1");
-    system("sudo shutdown -h now");
     break;
   case eKeyC:
     return eKeyCancel;
@@ -76,6 +75,16 @@ keyType lcdscreenShutdown::keyEventHandler( keyType key )
     break;
   }
 
+  return eKeyNone;
+}
+
+keyType lcdscreenShutdown::processSecTimer(struct tm */*result*/)
+{
+  if( m_shutdown )
+  {
+    system("sudo umount /dev/sda1");
+    system("sudo shutdown -h now");
+  }
   return eKeyNone;
 }
 
@@ -109,5 +118,10 @@ keyType lcdscreenNoShutDown::keyEventHandler( keyType key )
     break;
   }
 
+  return eKeyNone;
+}
+
+keyType lcdscreenNoShutDown::processSecTimer(struct tm */*result*/)
+{
   return eKeyNone;
 }
