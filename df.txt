@@ -1,0 +1,9 @@
+Filesystem     1K-blocks    Used Available Use% Mounted on
+rootfs           3716304 3196396    318524  91% /
+/dev/root        3716304 3196396    318524  91% /
+devtmpfs          219744       0    219744   0% /dev
+tmpfs              44784     400     44384   1% /run
+tmpfs               5120       0      5120   0% /run/lock
+tmpfs             131072       0    131072   0% /run/shm
+/dev/mmcblk0p1     57288    9944     47344  18% /boot
+/dev/sda1        7699456 5677444   2022012  74% /home/pi/usbstick

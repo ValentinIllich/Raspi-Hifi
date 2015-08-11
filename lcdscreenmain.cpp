@@ -7,6 +7,7 @@
 //--------------------------------------------------------------------------------------------------
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <signal.h>
@@ -15,6 +16,8 @@
 #include "lcdscreenmain.h"
 #include "lcdscreentimer.h"
 #include "lcdscreenselect.h"
+#include "lcdscreencpu.h"
+#include "lcdscreenmessages.h"
 #include "screenids.h"
 
 #ifdef  QT_EMULATION
@@ -90,11 +93,13 @@ void lcdscreenmain::activatedHandler()
   strings[2].visible=true;
   strings[3].visible=true;
   strings[4].visible=true;
+  updateRemaining();
 }
 
 keyType lcdscreenmain::secTimerHandler(struct tm *result)
 {
   static char buffer[128];
+  static int secs = 0;
 
   if( m_recordId>=0 )
   {
@@ -153,6 +158,14 @@ keyType lcdscreenmain::secTimerHandler(struct tm *result)
   strings[0].text = buffer;
   repaint();
 
+  if( (secs%60)==0 )
+  {
+    FILE *fp = fopen("/home/pi/usbstick/cputemp.csv","a");
+    if( fp ) fprintf(fp,"%s;%s\n",buffer,lcdscreencpu::getTemp());
+    fclose(fp);
+  }
+  secs++;
+
   return eKeyNone;
 }
 
@@ -188,7 +201,8 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
     else
     {
       m_lastScreen = eShutDown;
-      lcdscreen::activateScreen(POWER_SCREEN);
+      lcdscreenQuestion::setMessage("  Power Down ?");
+      lcdscreen::activateScreen(MESSAGE_SCREEN);
     }
     break;
   case eKeyB:
@@ -208,6 +222,14 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
       }
       break;
     case eShutDown:
+      if( lcdscreenQuestion::YesClicked() )
+      {
+        lcdscreenQuestion::setMessage("  Shut Down...");
+        lcdscreenQuestion::setButtons("");
+        lcdscreen::activateScreen(MESSAGE_SCREEN);
+        system("sudo umount /dev/sda1");
+        system("sudo shutdown -h now");
+      }
       break;
     default:
       break;
@@ -219,6 +241,14 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
 
   printf("mainscreen returned %d\n",ret);
   return ret;
+}
+
+void lcdscreenmain::updateRemaining()
+{
+  int hours=0,mins=0,secs=0;
+  lcdscreenselect::getRemainig(hours,mins,secs);
+  sprintf(m_remaining,"%02d:%02d:%02d",hours,mins,secs);
+  strings[5].text = m_remaining;
 }
 
 void lcdscreenmain::startRecording()
@@ -249,7 +279,7 @@ void lcdscreenmain::stopRecording()
 #endif
     m_recordId = -1;
     strings[3].visible=true;
-    strings[5].text = "--:--:--";
+    updateRemaining();
     repaint();
   }
 }
@@ -280,7 +310,7 @@ void lcdscreenmain::stopPlay()
     m_playId = -1;
 #endif
     strings[4].visible=true;
-    strings[5].text = "--:--:--";
+    updateRemaining();
     repaint();
   }
 }

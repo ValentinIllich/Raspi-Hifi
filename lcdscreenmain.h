@@ -31,6 +31,8 @@ public:
   void startPlay(char *playfile);
   void stopPlay();
 
+  void updateRemaining();
+
 protected:
   virtual void activatedHandler();
   virtual keyType secTimerHandler(struct tm *result);
@@ -38,6 +40,7 @@ protected:
 
 private:
   char m_recordfile[1024];
+  char m_remaining[32];
 
   int m_recordId;
   int m_playId;

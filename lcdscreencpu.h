@@ -18,6 +18,8 @@ public:
   lcdscreencpu();
   virtual ~lcdscreencpu();
 
+  static char *getTemp();
+
 protected:
   virtual void paintEvent();
   virtual keyType secTimerHandler(struct tm *result);

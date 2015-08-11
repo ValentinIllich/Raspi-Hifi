@@ -25,11 +25,17 @@ lcdscreencpu::lcdscreencpu()
   uint8 i;
   for(i=0;i<128;i++)  DemoMem[i] = 0;
 
+  secTimerHandler(0);
   setupScreen(CPUTEMP_SCREEN,this);
 }
 
 lcdscreencpu::~lcdscreencpu()
 {
+}
+
+char *lcdscreencpu::getTemp()
+{
+  return TempString;
 }
 
 void lcdscreencpu::paintEvent()
@@ -86,7 +92,7 @@ keyType lcdscreencpu::secTimerHandler(struct tm */*result*/)
   {
     TempString[3]=0;	// end at 1/10 C
     sscanf(TempString,"%u",&temp);
-    TempString[3]=TempString[2]; TempString[2]='.'; TempString[4]='?'; TempString[5]='C'; TempString[6]=0;
+    TempString[3]=TempString[2]; TempString[2]=','; TempString[4]=0/*' '*/; TempString[5]='C'; TempString[6]=0;
   }
 
   for(i=126;i>0;i--)  DemoMem[i+1] = DemoMem[i];
