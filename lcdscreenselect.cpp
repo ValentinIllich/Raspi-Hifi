@@ -8,13 +8,17 @@
 
 #include "lcdscreenselect.h"
 #include "screenids.h"
+#include "lcdscreenmessages.h"
 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+static char infoLine[32];
+
 static objectinfo strings[] = {
-  { eText,true,   0,56,  0, 0,  0,"Cancel         Select" },
+  { eText,true,   0,56,  0, 0,  0,"Cancel  Info   Select" },
+  { eText,true,   0,56,  0, 0,  0,infoLine },
   { eNone,false, 0,0,0,0,  0,NULL },
 };
 
@@ -27,7 +31,11 @@ lcdscreenselect::lcdscreenselect()
   , m_filecount(0)
   , m_startIdx(0)
   , m_selIdx(0)
+  , m_total(1)
+  , m_used(1)
+  , m_info(false)
 {
+  strings[1].visible = false;
   lcdscreen::setupScreen(SELECT_SCREEN,&selectscreen);
 }
 
@@ -37,6 +45,7 @@ lcdscreenselect::~lcdscreenselect()
 
 char *lcdscreenselect::selectedFile()
 {
+  fprintf(stderr,"selected: %s\n",m_selected);
   return m_selected;
 }
 void lcdscreenselect::resetSelectedFile()
@@ -44,27 +53,77 @@ void lcdscreenselect::resetSelectedFile()
   strcpy(m_selected,"");
 }
 
+void lcdscreenselect::getRemainig(int &hours,int &minutes,int &seconds)
+{
+  lcdscreenselect *inst = (lcdscreenselect*)lcdscreen::getScreen(SELECT_SCREEN);
+  inst->activatedHandler();
+  int bytes = (inst->m_total - inst->m_used)*1024;
+  seconds = bytes/2/2/44100;
+  hours = seconds/3600; seconds = seconds % 3600;
+  minutes = seconds / 60; seconds = seconds % 60;
+}
+
 void lcdscreenselect::activatedHandler()
 {
   cleanup();
 
-  system("ls -lt /home/pi/usbstick/*.wav > /home/pi/filelist.txt");
+  char buffer [1024];
 
-  FILE *fp = fopen("/home/pi/filelist.txt","r");
+#ifdef QT_EMULATION
+  const char *file1 = "filelist.txt";
+  const char *file2 = "df.txt";
+#else
+  system("ls -lt /home/pi/usbstick/*.wav > /home/pi/filelist.txt");
+  system("df > /home/pi/df.txt");
+  const char *file1 = "/home/pi/filelist.txt";
+  const char *file2 = "/home/pi/df.txt";
+#endif
+
+  FILE *fp = fopen(file1,"r");
   if( fp )
   {
-    char buffer [1024];
-
+    //-rwxr-xr-x 1 pi pi  288285840 Jul 17 21:59 /home/pi/usbstick/2015-07-17T21-32-45.wav
     m_filecount = 0;
+    int mbs = 0;
     while( fgets(buffer,1023,fp) )
     {
       strtok(buffer,"\n");
-      int pos = strlen(buffer)-1;
-      while( buffer[pos]!='/') pos--;
-      m_files[m_filecount] = new char[strlen(buffer+pos+1)+1];
-      strcpy(m_files[m_filecount++],buffer+pos+1);
+      int pos1 = 18; while( buffer[pos1]==' ' ) pos1++; // start pos of size col
+      int pos2 = pos1; while( buffer[pos2]!=' ' ) pos2++; // end pos of size col
+      int pos3 = strlen(buffer)-1; while( buffer[pos3]!='.') pos3--; // end pos of filename (w/o extension)
+      buffer[pos3--] = 0x0; while( buffer[pos3]!='/') pos3--; // start pos of filename (w/o path)
+      buffer[pos2] = 0x0; m_sizes[m_filecount] = atoi(buffer+pos1);
+      m_files[m_filecount] = new char[strlen(buffer+pos3+1)+1];
+      strcpy(m_files[m_filecount],buffer+pos3+1);
+      fprintf(stderr,"%s (%d bytes)\n",m_files[m_filecount],m_sizes[m_filecount]);
+      mbs += m_sizes[m_filecount] / 1024;
+      m_filecount++;
+    }
+    fprintf(stderr,"total used %d kB\n",mbs);
+    fclose(fp);
+  }
+  fp = fopen(file2,"r");
+  if( fp )
+  {
+    //dev/sda1        7699456 5760528   1938928  75% /home/pi/usbstick
+    m_total = 0;
+    m_used = 0;
+    while( fgets(buffer,1023,fp) )
+    {
+      strtok(buffer,"\n");
+      if( strstr(buffer,"usbstick") )
+      {
+        fprintf(stderr,"%s\n",buffer);
+        int pos1 = 9; while( buffer[pos1]==' ' ) pos1++; // start pos of size
+        int pos2 = pos1; while( buffer[pos2]!=' ' ) pos2++; // end pos of size
+        int pos3 = pos2; while( buffer[pos3]==' ') pos3++; // start pos of used
+        int pos4 = pos3; while( buffer[pos4]!=' ') pos4++; // end pos of used
+        buffer[pos2] = 0x0; m_total = atoi(buffer+pos1);
+        buffer[pos4] = 0x0; m_used = atoi(buffer+pos3);
+      }
     }
     fclose(fp);
+    fprintf(stderr,"total %d, used %d kB\n",m_total,m_used);
   }
 }
 
@@ -78,13 +137,51 @@ keyType lcdscreenselect::keyEventHandler( keyType key )
   switch( key )
   {
   case eKeyA:
-    strcpy(m_selected,"");
-    return eKeyCancel;
+    if( m_info )
+    {
+      m_info = !m_info;
+      strings[0].visible = !m_info;
+      strings[1].visible = m_info;
+      repaint();
+    }
+    else
+    {
+      strcpy(m_selected,"");
+      return eKeyCancel;
+    }
+    break;
+  case eKeyB:
+    m_info = !m_info;
+    strings[0].visible = !m_info;
+    strings[1].visible = m_info;
+    repaint();
     break;
   case eKeyC:
-    strcpy(m_selected,"/home/pi/usbstick/");
-    strcat(m_selected,m_files[m_selIdx]);
-    return eKeyCancel;
+    if( m_info )
+    {
+      lcdscreenQuestion *quest = (lcdscreenQuestion*)(getScreen(MESSAGE_SCREEN));
+      quest->setMessage("Delete recording");
+      activateScreen(MESSAGE_SCREEN);
+    }
+    else
+    {
+      strcpy(m_selected,"/home/pi/usbstick/");
+      strcat(m_selected,m_files[m_selIdx]);
+      return eKeyCancel;
+    }
+    break;
+  case eKeyCancel:
+    if( lcdscreenQuestion::YesClicked() )
+    {
+      strcpy(m_selected,"/home/pi/usbstick/");
+      strcat(m_selected,m_files[m_selIdx]);
+      if( remove(m_selected) )
+        m_filecount--;
+      if( m_selIdx>=m_filecount ) m_selIdx=m_filecount-1;
+      strcpy(m_selected,"");
+      activatedHandler();
+      repaint();
+    }
     break;
   case eKeyUp:
     m_selIdx--;
@@ -117,7 +214,22 @@ void lcdscreenselect::paintEvent()
   {
     if( (m_startIdx+i)<m_filecount )
     {
-      LCD_PrintXY(3, 2+i*10,m_files[m_startIdx+i]);
+      char buffer[32];
+      if( m_info )
+      {
+        int bytes = m_sizes[m_startIdx+i];
+        int kbytes = bytes/1024;
+        int seconds = bytes/2/2/44100;
+        int hours = seconds/3600; seconds = seconds % 3600;
+        int mins = seconds / 60; seconds = seconds % 60;
+        sprintf(buffer,"%02d:%02d:%02d %4d MB %2d%%",
+                hours,mins,seconds,
+              kbytes/1024,
+              kbytes*100/m_total);
+        LCD_PrintXY(3, 2+i*10,buffer);
+      }
+      else
+        LCD_PrintXY(3, 2+i*10,m_files[m_startIdx+i]);
       if( (m_startIdx+i)==m_selIdx )
       {
         int x = 0, y = 10*i, dx = 127, dy = 10;
@@ -129,6 +241,8 @@ void lcdscreenselect::paintEvent()
       }
     }
   }
+
+  sprintf(infoLine,"Back  %2d%%free  Delete",(m_total-m_used)*100/m_total);
 }
 
 void lcdscreenselect::cleanup()
