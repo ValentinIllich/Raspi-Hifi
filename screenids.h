@@ -9,8 +9,9 @@
 
 #define POWER_SCREEN        5
 #define POWER_DENIED        6
+#define MESSAGE_SCREEN      7
 
-#define CPUTEMP_SCREEN      7
+#define CPUTEMP_SCREEN      8
 
 #endif // SCREENIDS_H
 

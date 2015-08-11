@@ -51,4 +51,24 @@ protected:
   virtual keyType processSecTimer(struct tm *result);
 };
 
+class lcdscreenQuestion : public lcdscreenmessages
+{
+public:
+  lcdscreenQuestion();
+  ~lcdscreenQuestion();
+
+  static void setMessage(const char *message);
+  static void setButtons(const char *buttons);
+  static bool YesClicked();
+
+protected:
+  virtual keyType keyEventHandler( keyType key );
+  virtual keyType processSecTimer(struct tm *result);
+
+private:
+  static char m_message[128];
+  static char m_buttons[128];
+  static bool m_yesClicked;
+};
+
 #endif // LCDSCREENMESSAGES_H

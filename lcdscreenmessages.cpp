@@ -10,6 +10,7 @@
 #include "screenids.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 lcdscreenmessages::lcdscreenmessages( objectinfo *objects )
   : lcdscreen(objects)
@@ -41,7 +42,7 @@ keyType lcdscreenmessages::secTimerHandler(struct tm *result)
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-static objectinfo strings[] = {
+static objectinfo shutDownStrings[] = {
   { eText,true ,17,17,  0, 0, 1,"Power Down ?" },
   { eText,true,  0,56,  0, 0,  0," Yes           Cancel" },
   { eNone,false, 0,0,0,0,  0,NULL },
@@ -49,7 +50,7 @@ static objectinfo strings[] = {
 
 static lcdscreenShutdown shutdown;
 
-lcdscreenShutdown::lcdscreenShutdown() : lcdscreenmessages(strings), m_shutdown(false)
+lcdscreenShutdown::lcdscreenShutdown() : lcdscreenmessages(shutDownStrings), m_shutdown(false)
 {
   lcdscreen::setupScreen(POWER_SCREEN,&shutdown);
 }
@@ -63,8 +64,6 @@ keyType lcdscreenShutdown::keyEventHandler( keyType key )
   switch( key )
   {
   case eKeyA:
-    strings[0].text = "Shut Down...";
-    strings[1].text = "";
     m_shutdown = true;
     repaint();
     break;
@@ -124,4 +123,66 @@ keyType lcdscreenNoShutDown::keyEventHandler( keyType key )
 keyType lcdscreenNoShutDown::processSecTimer(struct tm */*result*/)
 {
   return eKeyNone;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+static objectinfo strings[] = {
+  { eText,true , 0,17,  0, 0, 1,"" },
+  { eText,true,  0,56,  0, 0,  0," Yes           Cancel" },
+  { eNone,false, 0,0,0,0,  0,NULL },
+};
+
+static lcdscreenQuestion question;
+
+char lcdscreenQuestion::m_message[128] = "";
+char lcdscreenQuestion::m_buttons[128] = "";
+bool lcdscreenQuestion:: m_yesClicked = false;
+
+lcdscreenQuestion::lcdscreenQuestion() : lcdscreenmessages(strings)
+{
+  lcdscreen::setupScreen(MESSAGE_SCREEN,&question);
+}
+
+lcdscreenQuestion::~lcdscreenQuestion()
+{
+}
+
+keyType lcdscreenQuestion::keyEventHandler( keyType key )
+{
+  switch( key )
+  {
+  case eKeyA:
+    m_yesClicked = true;
+  case eKeyC:
+    return eKeyCancel;
+    break;
+  default:
+    break;
+  }
+
+  return eKeyNone;
+}
+
+keyType lcdscreenQuestion::processSecTimer(struct tm */*result*/)
+{
+  m_yesClicked = false;
+  return eKeyNone;
+}
+
+void lcdscreenQuestion::setMessage(const char *message)
+{
+  strcpy(m_message,message);
+  strings[0].text = m_message;
+}
+
+void lcdscreenQuestion::setButtons(const char *buttons)
+{
+  strcpy(m_buttons,buttons);
+  strings[1].text = m_buttons;
+}
+
+bool lcdscreenQuestion::YesClicked()
+{
+  return m_yesClicked;
 }
