@@ -113,7 +113,7 @@ void lcdscreen::activatePrevious()
 
 void lcdscreen::activateScreen( int id )
 {
-  printf("activeScreen %d\n",id);
+  myprintf("activeScreen %d\n",id);
   screenmap::iterator it = getScreenList()->find(id);
   if( it!=getScreenList()->end() )
   {
@@ -362,7 +362,7 @@ keyType lcdscreen::keyEvent( keyType key )
 
   if( retval!=eKeyNone ) handleKeyEvent(retval);
 
-  printf("lcdscreen returned %d\n",retval);
+  myprintf("lcdscreen returned %d\n",retval);
   return retval;
 }
 
@@ -452,7 +452,7 @@ void lcdscreen::dumpObjectList()
   static const char *objT[] = { "eNone","eText" };
   for( int i=0; m_objectList[i].object!=eNone; i++ )
   {
-    printf("  { %s,%s, %3d,%3d,%3d,%3d, %d,\"%s\" },\n",
+    myprintf("  { %s,%s, %3d,%3d,%3d,%3d, %d,\"%s\" },\n",
            objT[m_objectList[i].object],m_objectList[i].visible ? "true " : "false",
         m_objectList[i].x,m_objectList[i].y,m_objectList[i].w,m_objectList[i].h,
         m_objectList[i].fontSize,m_objectList[i].text);

@@ -45,7 +45,7 @@ lcdscreenselect::~lcdscreenselect()
 
 char *lcdscreenselect::selectedFile()
 {
-  fprintf(stderr,"selected: %s\n",m_selected);
+  myprintf("selected: %s\n",m_selected);
   return m_selected;
 }
 void lcdscreenselect::resetSelectedFile()
@@ -57,8 +57,8 @@ void lcdscreenselect::getRemainig(int &hours,int &minutes,int &seconds)
 {
   lcdscreenselect *inst = (lcdscreenselect*)lcdscreen::getScreen(SELECT_SCREEN);
   inst->activatedHandler();
-  int bytes = (inst->m_total - inst->m_used)*1024;
-  seconds = bytes/2/2/44100;
+  int kbytes = (inst->m_total - inst->m_used);
+  seconds = (int)((double)kbytes/172.265625);
   hours = seconds/3600; seconds = seconds % 3600;
   minutes = seconds / 60; seconds = seconds % 60;
 }
@@ -95,11 +95,11 @@ void lcdscreenselect::activatedHandler()
       buffer[pos2] = 0x0; m_sizes[m_filecount] = atoi(buffer+pos1);
       m_files[m_filecount] = new char[strlen(buffer+pos3+1)+1];
       strcpy(m_files[m_filecount],buffer+pos3+1);
-      fprintf(stderr,"%s (%d bytes)\n",m_files[m_filecount],m_sizes[m_filecount]);
+      printf("%s (%d bytes)\n",m_files[m_filecount],m_sizes[m_filecount]);
       mbs += m_sizes[m_filecount] / 1024;
       m_filecount++;
     }
-    fprintf(stderr,"total used %d kB\n",mbs);
+    myprintf("total used %d kB\n",mbs);
     fclose(fp);
   }
   fp = fopen(file2,"r");
@@ -113,7 +113,7 @@ void lcdscreenselect::activatedHandler()
       strtok(buffer,"\n");
       if( strstr(buffer,"usbstick") )
       {
-        fprintf(stderr,"%s\n",buffer);
+        myprintf("%s\n",buffer);
         int pos1 = 9; while( buffer[pos1]==' ' ) pos1++; // start pos of size
         int pos2 = pos1; while( buffer[pos2]!=' ' ) pos2++; // end pos of size
         int pos3 = pos2; while( buffer[pos3]==' ') pos3++; // start pos of used
@@ -123,7 +123,7 @@ void lcdscreenselect::activatedHandler()
       }
     }
     fclose(fp);
-    fprintf(stderr,"total %d, used %d kB\n",m_total,m_used);
+    myprintf("total %d, used %d kB\n",m_total,m_used);
   }
 }
 

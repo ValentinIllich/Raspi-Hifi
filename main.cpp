@@ -47,10 +47,10 @@ int main(int argc, char **argv)
       lcdscreen::setDebuMode(true);
   }
 
-  printf("Raspi Hifi Recorder V1.0.0 by Valentin Illich [" __DATE__ " " __TIME__"]\n");
-  printf("RaspberryHwRevision=%i\r\n",GetRaspberryHwRevision());
+  myprintf("Raspi Hifi Recorder V1.0.0 by Valentin Illich [" __DATE__ " " __TIME__"]\n");
+  myprintf("RaspberryHwRevision=%i\r\n",GetRaspberryHwRevision());
 
-  if(!RaspiLcdHwInit()) { printf("RaspiLcdHwInit() failed!\r\n"); return 1; }
+  if(!RaspiLcdHwInit()) { myprintf("RaspiLcdHwInit() failed!\r\n"); return 1; }
   LCD_Init();			// Init Display
   SetBacklight(1);	// Turn Backlight on
 

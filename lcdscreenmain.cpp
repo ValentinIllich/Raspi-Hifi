@@ -7,8 +7,8 @@
 //--------------------------------------------------------------------------------------------------
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
@@ -105,7 +105,7 @@ keyType lcdscreenmain::secTimerHandler(struct tm *result)
   {
     if( !proc_exists(m_recordId) )
     {
-      printf("record no longer running: %d!\n",errno);
+      myprintf("record no longer running: %d!\n",errno);
       stopRecording();
     }
   }
@@ -113,7 +113,7 @@ keyType lcdscreenmain::secTimerHandler(struct tm *result)
   {
     if( !proc_exists(m_playId) )
     {
-      printf("play no longer running: %d!\n",errno);
+      myprintf("play no longer running: %d!\n",errno);
       stopPlay();
     }
   }
@@ -239,7 +239,7 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
     break;
   }
 
-  printf("mainscreen returned %d\n",ret);
+  myprintf("mainscreen returned %d\n",ret);
   return ret;
 }
 
@@ -261,7 +261,7 @@ void lcdscreenmain::startRecording()
 
     const char *args[] = { "/usr/bin/arecord","-f", "cd", "-Dhw:1,0", "-r", "44100", m_recordfile, NULL };
     m_recordId = spawn("/usr/bin/arecord",args);
-    printf("record process id is %d\n",m_recordId);
+    myprintf("record process id is %d\n",m_recordId);
 
     m_startTime = lcdscreen::toTimeInSeconds(result);
     strings[5].text = "00:00:00";
@@ -292,7 +292,7 @@ void lcdscreenmain::startPlay(char *playfile)
     struct tm *result = localtime(&clock);
     const char *args[] = { "/usr/bin/aplay","-f", "cd", "-Dhw:1,0", "-r", "44100", playfile, NULL };
     m_playId = spawn("/usr/bin/arecord",args);
-    printf("play process id is %d\n",m_playId);
+    myprintf("play process id is %d\n",m_playId);
 
     m_startTime = lcdscreen::toTimeInSeconds(result);
     strings[5].text = "00:00:00";

@@ -13,7 +13,10 @@
 #include "lcdscreentimer.h"
 #include "lcdscreenmain.h"
 #include "lcdscreenedit.h"
+#include "lcdscreenmessages.h"
 #include "screenids.h"
+
+#include <qmessagebox.h>
 
 static char timerText1[128];
 static char timerText2[128];
@@ -31,7 +34,7 @@ static objectinfo strings[] = {
   { eText,true,   0,40,  0, 0,  0, "" },
 
   { eText,true,   0,56,  0, 0,  0," Back" },
-  { eText,true,  54,56,  0, 0,  0,"" }, // Manu / Auto Display
+  { eText,true,  50,56,  0, 0,  0,"" }, // Manu / Auto Display
   { eText,true, 100,56,  0, 0,  0,"" }, // Set / On/Off Display
   { eNone,false, 0,0,0,0,  0,NULL },
 };
@@ -71,16 +74,18 @@ void lcdscreentimer::activatedHandler()
     if( m_timerSeconds>=0 )
       strings[6].text = "Wait";
     else
-      strings[6].text = "Auto";
+      strings[6].text = "Stop";
 
-    if( m_lastSwitcherManuState )
-      strings[7].text = ">Off";
+    if( m_lastRecordState )
+      strings[7].text = "Rec";
+    else if( m_lastSwitcherManuState )
+      strings[7].text = "Off";
     else
-      strings[7].text = ">On";
+      strings[7].text = "On";
   }
   else
   {
-    strings[6].text = "Manu";
+    strings[6].text = "Start";
     strings[7].text = "Set";
     strings[6].visible = true;
   }
@@ -171,12 +176,14 @@ keyType lcdscreentimer::secTimerHandler(struct tm *result)
     if( recordOn!=m_lastRecordState )
     {
       m_lastRecordState = recordOn;
-      fprintf(stderr,"record!\n");
+      myprintf("record!\n");
       lcdscreenmain *main = static_cast<lcdscreenmain*>(lcdscreen::getScreen(RECORD_PLAY_SCREEN));
       if( recordOn )
         main->startRecording();
       else
         main->stopRecording();
+
+      activatedHandler();
     }
   }
 
@@ -201,7 +208,8 @@ void lcdscreentimer::switchPower( bool switcherAutoState, bool switcherManuState
   if( update )
   {
     bool state = m_lastSwitcherAutoState || m_lastSwitcherManuState;
-    fprintf(stderr,"switching %s!\n",state ? "On" : "Off");
+    printf("switching %s!\n",state ? "On" : "Off");
+    QMessageBox::warning(0,"",state ? "On" : "Off");
 #ifndef QT_EMULATION
     if( state )
     {
@@ -232,6 +240,11 @@ keyType lcdscreentimer::keyEventHandler( keyType key )
     }
     else
     {
+/*      if( m_timerActive && m_lastRecordState )
+      {
+        lcdscreenmain *main = static_cast<lcdscreenmain*>(lcdscreen::getScreen(RECORD_PLAY_SCREEN));
+        main->stopRecording();
+      }*/
       m_timerActive = !m_timerActive;
       if( m_timerActive )
         m_timerSeconds = 0; // start timer for auto switching
@@ -245,15 +258,21 @@ keyType lcdscreentimer::keyEventHandler( keyType key )
     if( m_timerActive )
     {
       m_timerSeconds = -1; // reset timer for auto switching
-      if( m_lastSwitcherManuState )
+      if( m_lastRecordState )
+      {
+        lcdscreenQuestion::setMessage("   Recording!");
+        lcdscreenQuestion::setButtons("");
+        lcdscreen::activateScreen(MESSAGE_SCREEN);
+      }
+      else if( m_lastSwitcherManuState )
       {
         switchPower(m_lastSwitcherAutoState, false);
-        strings[7].text = "On";
+//        strings[7].text = "On";
       }
       else
       {
         switchPower(m_lastSwitcherAutoState, true);
-        strings[7].text = "Off";
+//        strings[7].text = "Off";
       }
       activatedHandler();
     }
@@ -303,7 +322,7 @@ keyType lcdscreentimer::keyEventHandler( keyType key )
         fclose(fp);
       }
       else
-        fprintf(stderr,"+++ could not write timer file!\n");
+        myprintf("+++ could not write timer file!\n");
     }
     m_editMode = false;
     activatedHandler();

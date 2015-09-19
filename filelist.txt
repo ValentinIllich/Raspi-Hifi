@@ -1,3 +1,16 @@
+-rwxr-xr-x 1 pi pi    1874464 Sep 18 07:48 /home/pi/usbstick/2015-09-18T07-48-28.wav
+-rwxr-xr-x 1 pi pi  111627268 Sep 17 22:06 /home/pi/usbstick/2015-09-17T21-56-01.wav
+-rwxr-xr-x 1 pi pi   97888872 Sep 17 21:49 /home/pi/usbstick/2015-09-17T21-40-18.wav
+-rwxr-xr-x 1 pi pi  156282568 Sep 17 21:33 /home/pi/usbstick/2015-09-17T21-18-53.wav
+-rwxr-xr-x 1 pi pi  212118232 Sep 17 20:49 /home/pi/usbstick/2015-09-17T20-29-00.wav
+-rwxr-xr-x 1 pi pi  167881920 Sep 17 20:23 /home/pi/usbstick/2015-09-17T20-07-27.wav
+-rwxr-xr-x 1 pi pi  105210136 Sep 16 22:12 /home/pi/usbstick/2015-09-16T22-02-57.wav
+-rwxr-xr-x 1 pi pi  123226620 Sep 16 21:57 /home/pi/usbstick/2015-09-16T21-46-03.wav
+-rwxr-xr-x 1 pi pi  131297652 Sep 16 21:40 /home/pi/usbstick/2015-09-16T21-27-53.wav
+-rwxr-xr-x 1 pi pi  123711764 Sep 16 20:57 /home/pi/usbstick/2015-09-16T20-45-42.wav
+-rwxr-xr-x 1 pi pi  107194816 Sep 16 20:37 /home/pi/usbstick/2015-09-16T20-27-29.wav
+-rwxr-xr-x 1 pi pi  154628668 Sep 16 20:22 /home/pi/usbstick/2015-09-16T20-07-51.wav
+-rwxr-xr-x 1 pi pi    3550416 Jul 30 21:47 /home/pi/usbstick/2015-07-30T21-46-40.wav
 -rwxr-xr-x 1 pi pi  288285840 Jul 17 21:59 /home/pi/usbstick/2015-07-17T21-32-45.wav
 -rwxr-xr-x 1 pi pi  485740544 Jul 11 21:00 /home/pi/usbstick/2015-07-11T20-15-00.wav
 -rwxr-xr-x 1 pi pi 1009871384 May 12 08:40 /home/pi/usbstick/2015-05-12T07-04-59.wav
@@ -6,6 +19,3 @@
 -rwxr-xr-x 1 pi pi  512268004 May  9 21:39 /home/pi/usbstick/2015-05-09T20-51-18.wav
 -rwxr-xr-x 1 pi pi  609936312 May  9 20:51 /home/pi/usbstick/2015-05-09T19-53-37.wav
 -rwxr-xr-x 1 pi pi  559790064 May  1 18:58 /home/pi/usbstick/2015-05-01T18-05-25.wav
--rwxr-xr-x 1 pi pi  748665444 Feb 12 20:08 /home/pi/usbstick/Schlagzeug-Erlangen.wav
--rwxr-xr-x 1 pi pi  555776600 Feb 12 06:49 /home/pi/usbstick/Morgenkonzert 1.wav
--rwxr-xr-x 1 pi pi  360219464 Feb 12 05:58 /home/pi/usbstick/Morgenkonzert 2.wav

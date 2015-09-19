@@ -30,6 +30,8 @@ extern "C"
 {
 #endif
 
+void myprintf( const char *format,...);
+
 void LCD_ClearScreen(void);
 void LCD_SetPenColor(uint8 c);
 void LCD_SetFillColor(int8 c);

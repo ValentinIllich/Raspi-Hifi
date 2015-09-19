@@ -13,6 +13,7 @@
 #include "lcd.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include "raspilcd.h"
 
 //=== Preprocessing directives (#define) ===========================================================
@@ -40,6 +41,16 @@ uint8	framebuffer[LCD_WIDTH][LCD_HEIGHT/8];
 uint8	PenColor;
 uint8	FillColor;
 uint8	FontNumber;
+
+void myprintf( const char *format,...)
+{
+  static char buffer[4096];
+  va_list list;
+  va_start(list,format);
+  vsprintf(buffer,format,list);
+  printf("%s",buffer);
+  va_end(list);
+}
 
 //=== Local function prototypes ====================================================================
 
