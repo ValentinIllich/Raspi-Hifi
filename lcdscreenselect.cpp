@@ -95,7 +95,7 @@ void lcdscreenselect::activatedHandler()
       buffer[pos2] = 0x0; m_sizes[m_filecount] = atoi(buffer+pos1);
       m_files[m_filecount] = new char[strlen(buffer+pos3+1)+1];
       strcpy(m_files[m_filecount],buffer+pos3+1);
-      printf("%s (%d bytes)\n",m_files[m_filecount],m_sizes[m_filecount]);
+      myprintf("%s (%d bytes)\n",m_files[m_filecount],m_sizes[m_filecount]);
       mbs += m_sizes[m_filecount] / 1024;
       m_filecount++;
     }
@@ -167,6 +167,7 @@ keyType lcdscreenselect::keyEventHandler( keyType key )
     {
       strcpy(m_selected,"/home/pi/usbstick/");
       strcat(m_selected,m_files[m_selIdx]);
+      strcat(m_selected,".wav");
       return eKeyCancel;
     }
     break;

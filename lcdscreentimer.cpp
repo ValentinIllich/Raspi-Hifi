@@ -16,8 +16,6 @@
 #include "lcdscreenmessages.h"
 #include "screenids.h"
 
-#include <qmessagebox.h>
-
 static char timerText1[128];
 static char timerText2[128];
 static char timerText3[128];
@@ -208,8 +206,8 @@ void lcdscreentimer::switchPower( bool switcherAutoState, bool switcherManuState
   if( update )
   {
     bool state = m_lastSwitcherAutoState || m_lastSwitcherManuState;
-    printf("switching %s!\n",state ? "On" : "Off");
-    QMessageBox::warning(0,"",state ? "On" : "Off");
+    myprintf("switching %s!\n",state ? "On" : "Off");
+    //QMessageBox::warning(0,"",state ? "On" : "Off");
 #ifndef QT_EMULATION
     if( state )
     {
