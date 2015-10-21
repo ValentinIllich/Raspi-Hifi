@@ -183,7 +183,10 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
     break;
   case eKeyDown:
     if( m_playId>=0 )
+    {
       stopPlay();
+      strcpy(m_recordfile,"");
+    }
     else if( strlen(m_recordfile)>0 )
       startPlay(m_recordfile);
     else
