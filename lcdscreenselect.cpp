@@ -36,7 +36,7 @@ lcdscreenselect::lcdscreenselect()
   , m_info(false)
 {
   strings[1].visible = false;
-  lcdscreen::setupScreen(SELECT_SCREEN,&selectscreen);
+  lcdscreen::setupScreen(SELECT_SCREEN,&selectscreen,"selectScreen");
 }
 
 lcdscreenselect::~lcdscreenselect()

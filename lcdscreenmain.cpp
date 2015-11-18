@@ -68,7 +68,7 @@ lcdscreenmain::lcdscreenmain()
   , m_lastScreen(eNoAction)
 {
   strcpy(m_recordfile,"");
-  setupScreen(RECORD_PLAY_SCREEN,this);
+  setupScreen(RECORD_PLAY_SCREEN,this,"playScreen");
 }
 
 lcdscreenmain::~lcdscreenmain()
@@ -242,7 +242,7 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
     break;
   }
 
-  myprintf("mainscreen returned %d\n",ret);
+  myprintf("mainscreen returning %s\n",lcdscreen::keyToString(ret));
   return ret;
 }
 

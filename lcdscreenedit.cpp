@@ -50,7 +50,7 @@ lcdscreenedit::lcdscreenedit()
   , m_selectedPos(0)
 {
   strcpy(m_substring,"");
-  lcdscreen::setupScreen(EDIT_SCREEN,&editscreen);
+  lcdscreen::setupScreen(EDIT_SCREEN,&editscreen,"editScreen");
 }
 
 lcdscreenedit::~lcdscreenedit()

@@ -26,7 +26,7 @@ lcdscreencpu::lcdscreencpu()
   for(i=0;i<128;i++)  DemoMem[i] = 0;
 
   secTimerHandler(0);
-  setupScreen(CPUTEMP_SCREEN,this);
+  setupScreen(CPUTEMP_SCREEN,this,"cpuScreen");
 }
 
 lcdscreencpu::~lcdscreencpu()

@@ -12,6 +12,7 @@
 #include <time.h>
 #include <map>
 #include <list>
+#include <string>
 
 #define DEFAULT_SCREEN_ID   0
 
@@ -27,6 +28,7 @@ extern "C"
 
 class lcdscreen;
 typedef std::map<int,lcdscreen*> screenmap;
+typedef std::map<int,std::string> screennames;
 typedef std::list<int> screenlist;
 
 typedef enum
@@ -78,12 +80,15 @@ public:
   lcdscreen( objectinfo *objects );
   virtual ~lcdscreen();
 
+  // debugging
+  static const char *keyToString(keyType key);
+
   // to be called by main
   static void updateDisplay();
   static void updateTimer();
   static keyType keyPressed( keyType key );
 
-  static void setupScreen( int id, lcdscreen *screen );
+  static void setupScreen( int id, lcdscreen *screen, const char *name );
 
   static void activatePrevious();
   static void activateScreen( int id );
@@ -135,6 +140,7 @@ private:
 
   static bool m_debugMode;
   static screenmap *m_screens;
+  static screennames *m_screenNames;
   static screenlist *m_screenQueue;
 
   static int m_activeId;

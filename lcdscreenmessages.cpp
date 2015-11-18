@@ -52,7 +52,7 @@ static lcdscreenShutdown shutdown;
 
 lcdscreenShutdown::lcdscreenShutdown() : lcdscreenmessages(shutDownStrings), m_shutdown(false)
 {
-  lcdscreen::setupScreen(POWER_SCREEN,&shutdown);
+  lcdscreen::setupScreen(POWER_SCREEN,&shutdown,"powerScreen");
 }
 
 lcdscreenShutdown::~lcdscreenShutdown()
@@ -99,7 +99,7 @@ static lcdscreenNoShutDown noshutdown;
 
 lcdscreenNoShutDown::lcdscreenNoShutDown() : lcdscreenmessages(message)
 {
-  lcdscreen::setupScreen(POWER_DENIED,&noshutdown);
+  lcdscreen::setupScreen(POWER_DENIED,&noshutdown,"noShutdownScreen");
 }
 
 lcdscreenNoShutDown::~lcdscreenNoShutDown()
@@ -141,7 +141,7 @@ bool lcdscreenQuestion:: m_yesClicked = false;
 
 lcdscreenQuestion::lcdscreenQuestion() : lcdscreenmessages(strings)
 {
-  lcdscreen::setupScreen(MESSAGE_SCREEN,&question);
+  lcdscreen::setupScreen(MESSAGE_SCREEN,&question,"messageScreen");
 }
 
 lcdscreenQuestion::~lcdscreenQuestion()

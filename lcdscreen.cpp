@@ -18,11 +18,15 @@ lcdscreen *lcdscreen::m_activeScreen = 0;
 
 screenmap *lcdscreen::m_screens = NULL;
 screenlist *lcdscreen::m_screenQueue = NULL;
+screennames *lcdscreen::m_screenNames = NULL;
 
 screenmap *lcdscreen::getScreenList()
 {
   if( m_screens==NULL )
+  {
     m_screens = new screenmap();
+    m_screenNames = new screennames();
+  }
 
   return m_screens;
 }
@@ -46,6 +50,13 @@ lcdscreen::lcdscreen(objectinfo *objects)
 
 lcdscreen::~lcdscreen()
 {
+}
+
+const char *lcdscreen::keyToString(keyType key)
+{
+  static const char *keystr[] = { "eKeyNone","eKeyA","eKeyB","eKeyC","eKeyD","eKeyUp","eKeyDown","eKeyNext","eKeyPrev","eKeyCancel" };
+
+  return keystr[key];
 }
 
 static int editText = -1;
@@ -89,11 +100,14 @@ keyType lcdscreen::keyPressed( keyType key )
   return ret;
 }
 
-void lcdscreen::setupScreen( int id, lcdscreen *screen )
+void lcdscreen::setupScreen( int id, lcdscreen *screen, const char *name )
 {
   screenmap::iterator it = getScreenList()->find(id);
   if( it==getScreenList()->end() )
+  {
     (*getScreenList())[id] = screen;
+    (*m_screenNames)[id] = name;
+  }
 }
 
 void lcdscreen::activatePrevious()
@@ -113,7 +127,7 @@ void lcdscreen::activatePrevious()
 
 void lcdscreen::activateScreen( int id )
 {
-  myprintf("activeScreen %d\n",id);
+  myprintf("activeScreen %s\n",(*m_screenNames)[id].c_str());
   screenmap::iterator it = getScreenList()->find(id);
   if( it!=getScreenList()->end() )
   {
@@ -267,7 +281,10 @@ void lcdscreen::timetick()
     keyType key = secTimerHandler(result);
 
     if( (key!=eKeyNone) && (this==m_activeScreen) )
+    {
+      myprintf("secTimerHandler returning %s\n",lcdscreen::keyToString(key));
       handleKeyEvent(key);
+    }
 
     if( this==m_activeScreen )
     {
@@ -362,7 +379,7 @@ keyType lcdscreen::keyEvent( keyType key )
 
   if( retval!=eKeyNone ) handleKeyEvent(retval);
 
-  myprintf("lcdscreen returned %d\n",retval);
+  myprintf("lcdscreen returning %s\n",lcdscreen::keyToString(retval));
   return retval;
 }
 

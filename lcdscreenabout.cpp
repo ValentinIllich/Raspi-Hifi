@@ -30,7 +30,7 @@ lcdscreenabout::lcdscreenabout()
   , m_seconds(0)
   , m_contrast(9)
 {
-  setupScreen(ABOUT_SCREEN,this);
+  setupScreen(ABOUT_SCREEN,this,"aboutScreen");
 }
 
 lcdscreenabout::~lcdscreenabout()

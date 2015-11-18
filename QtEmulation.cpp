@@ -14,6 +14,7 @@
 #include <QPixmap>
 #include <QMessageBox>
 #include <QClipboard>
+#include <QTextEdit>
 
 static RaspiLcdWidget *m_window = NULL;
 
@@ -129,6 +130,25 @@ void QtEmulation_Exit()
 
 QColor m_pencol = Qt::black;
 QColor m_fillcol = Qt::white;
+
+QTextEdit *m_debug = NULL;
+
+void Qt_printf(char *message)
+{
+  if( m_debug==NULL )
+  {
+    m_debug = new QTextEdit(0);
+    m_debug->setFont(QFont("Courier",8));
+    m_debug->setWordWrapMode(QTextOption::NoWrap);
+    m_debug->setReadOnly(true);
+    m_debug->setPlainText("");
+    m_debug->setGeometry(40,40,600,400);
+    m_debug->show();
+  }
+
+  QString msg = message;
+  m_debug->append(msg.replace("\n",""));
+}
 
 void Qt_ClearScreen(void)
 {

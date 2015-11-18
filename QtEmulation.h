@@ -46,6 +46,8 @@ extern "C"
 void QtEmulation_Init();
 void QtEmulation_Exit();
 
+void Qt_printf(char *message);
+
 void Qt_ClearScreen(void);
 void Qt_SetPenColor(uint8 c);
 void Qt_SetFillColor(int8 c);

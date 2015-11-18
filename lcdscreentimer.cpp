@@ -52,7 +52,7 @@ lcdscreentimer::lcdscreentimer()
   , m_editMode(false)
   , m_timerSeconds(-1)
 {
-  lcdscreen::setupScreen(TIMER_SCREEN,&timerscreen);
+  lcdscreen::setupScreen(TIMER_SCREEN,&timerscreen,"timerScreen");
   m_updateTimerSettings = true;
 }
 

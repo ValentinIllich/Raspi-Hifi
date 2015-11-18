@@ -48,7 +48,11 @@ void myprintf( const char *format,...)
   va_list list;
   va_start(list,format);
   vsprintf(buffer,format,list);
+#ifdef QT_EMULATION
+  Qt_printf(buffer);
+#else
   printf("%s",buffer);
+#endif
   va_end(list);
 }
 
