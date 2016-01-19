@@ -377,9 +377,12 @@ keyType lcdscreen::keyEvent( keyType key )
     break;
   }
 
-  if( retval!=eKeyNone ) handleKeyEvent(retval);
+  if( retval!=eKeyNone )
+  {
+    handleKeyEvent(retval);
+    myprintf("lcdscreen returning %s\n",lcdscreen::keyToString(retval));
+  }
 
-  myprintf("lcdscreen returning %s\n",lcdscreen::keyToString(retval));
   return retval;
 }
 

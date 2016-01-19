@@ -205,6 +205,7 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
     {
       m_lastScreen = eShutDown;
       lcdscreenQuestion::setMessage("  Power Down ?");
+      lcdscreenQuestion::setButtons(" Yes           Cancel");
       lcdscreen::activateScreen(MESSAGE_SCREEN);
     }
     break;

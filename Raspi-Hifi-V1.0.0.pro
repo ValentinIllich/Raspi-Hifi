@@ -40,7 +40,7 @@ SOURCES += bcm2835.c lcd.c raspilcd.c \
     lcdscreenedit.cpp
 
 target.path = install
-target.files = *.pro Makefile *.h *c *.cpp *.inc
+target.files = *.pro Makefile *.h *.c *.cpp *.inc
 INSTALLS += target
 
 macx|win32{

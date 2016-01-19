@@ -161,6 +161,7 @@ keyType lcdscreenselect::keyEventHandler( keyType key )
     {
       lcdscreenQuestion *quest = (lcdscreenQuestion*)(getScreen(MESSAGE_SCREEN));
       quest->setMessage("Delete recording");
+      quest->setButtons(" Yes           Cancel");
       activateScreen(MESSAGE_SCREEN);
     }
     else
@@ -176,7 +177,8 @@ keyType lcdscreenselect::keyEventHandler( keyType key )
     {
       strcpy(m_selected,"/home/pi/usbstick/");
       strcat(m_selected,m_files[m_selIdx]);
-      if( remove(m_selected) )
+      strcat(m_selected,".wav");
+      if( remove(m_selected)==0 )
         m_filecount--;
       if( m_selIdx>=m_filecount ) m_selIdx=m_filecount-1;
       strcpy(m_selected,"");
