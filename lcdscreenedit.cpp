@@ -161,28 +161,52 @@ void lcdscreenedit::incdecChar( char *str, int pos, int delta )
   case '0':
     if( delta>0 )
       actual += delta;
-    else
+    else if( pos==0 )
       actual = '-';
+    else if( str[pos-1]==':' )
+    {
+      actual = '5';
+      incdecChar(str,pos-1,delta);
+    }
+    else
+    {
+      actual = '9';
+      if( str[pos-1]!='.' ) incdecChar(str,pos-1,delta);
+    }
     break;
   case '1':
   case '2':
   case '3':
   case '4':
-  case '5':
   case '6':
   case '7':
   case '8':
     actual += delta;
     break;
+  case '5':
+    if( (str[pos-1]==':') && (delta>0) )
+    {
+      actual = '0';
+      incdecChar(str,pos-1,delta);
+    }
+    else
+      actual += delta;
+    break;
   case '9':
     if( delta>0 )
+    {
       actual = '0';
+      if( str[pos-1]!='.' ) incdecChar(str,pos-1,delta);
+    }
     else
       actual += delta;
     break;
   case '-':
     if( delta>0 )
       actual = '0';
+    break;
+  case ':':
+    incdecChar(str,pos-1,delta);
     break;
   case '.':
     break;
