@@ -117,6 +117,16 @@ void UpdateButtons(void)
   if(!bcm2835_gpio_lev(PinButton[5])) Button |= (1<<5);
 
   ButtonPressed = (Button ^ ButtonMem) & Button;			// Set by Pressing a Button
+
+  static int repeat = 0;
+
+  if( Button!=0 )
+  {
+    repeat++;
+    if( repeat>5 ) ButtonPressed = Button;
+  }
+  else
+    repeat=0;
 }
 
 //--------------------------------------------------------------------------------------------------
