@@ -26,6 +26,7 @@ QColor m_background = Qt::lightGray;
 RaspiLcdWidget::RaspiLcdWidget( QWidget *parent )
   : QWidget(parent)
   , m_image(128,64,QImage::Format_Mono)
+  , m_keyPressed(eKeyNone)
 {
   QRgb value;
   value = m_background.rgb();
@@ -36,32 +37,36 @@ RaspiLcdWidget::RaspiLcdWidget( QWidget *parent )
   QRadioButton *butA = new QRadioButton(this);
   butA->move(24+marginx,160+marginy);
   butA->setCheckable(false);
-  connect(butA,SIGNAL(clicked()),this,SLOT(buttonApressed()));
+  registerKey(butA,eKeyA);
+
   QRadioButton *butB = new QRadioButton(this);
   butB->move(120+marginx,160+marginy);
   butB->setCheckable(false);
-  connect(butB,SIGNAL(clicked()),this,SLOT(buttonBpressed()));
+  registerKey(butB,eKeyB);
+
   QRadioButton *butC = new QRadioButton(this);
   butC->move(216+marginx,160+marginy);
   butC->setCheckable(false);
-  connect(butC,SIGNAL(clicked()),this,SLOT(buttonCpressed()));
+  registerKey(butC,eKeyC);
+
   QRadioButton *butD = new QRadioButton(this);
   butD->move(300+marginx,160+marginy);
   butD->setCheckable(false);
-  connect(butD,SIGNAL(clicked()),this,SLOT(buttonDpressed()));
+  registerKey(butD,eKeyD);
 
   QRadioButton *butUp = new QRadioButton(this);
   butUp->move(300+marginx,10+marginy);
   butUp->setCheckable(false);
-  connect(butUp,SIGNAL(clicked()),this,SLOT(buttonUppressed()));
+  registerKey(butUp,eKeyUp);
+
   QRadioButton *butDown = new QRadioButton(this);
   butDown->move(300+marginx,96+marginy);
   butDown->setCheckable(false);
-  connect(butDown,SIGNAL(clicked()),this,SLOT(buttonDownpressed()));
+  registerKey(butDown,eKeyDown);
 
   resize(350+2*marginx,200+2*marginy);
 
-  startTimer(50);
+  startTimer(100);
 }
 
 RaspiLcdWidget::~RaspiLcdWidget()
@@ -77,6 +82,20 @@ void RaspiLcdWidget::timerEvent ( QTimerEvent */*event*/ )
 {
   lcdscreen::updateDisplay();
   lcdscreen::updateTimer();
+
+  static int repeat = 0;
+
+  if( m_keyPressed!=eKeyNone )
+  {
+    repeat++;
+    if( repeat>5 )
+    {
+      if( lcdscreen::keyPressed(m_keyPressed)!=eKeyNone )
+        repeat=0;
+    }
+  }
+  else
+    repeat=0;
 }
 
 void RaspiLcdWidget::mouseDoubleClickEvent ( QMouseEvent * /*event*/ )
@@ -87,29 +106,31 @@ void RaspiLcdWidget::mouseDoubleClickEvent ( QMouseEvent * /*event*/ )
   if( clip ) clip->setPixmap(hcop/*QPixmap::fromImage(m_image).scaled(256,128)*/);
 }
 
-void RaspiLcdWidget::buttonApressed()
+void RaspiLcdWidget::registerKey(QAbstractButton *butt, keyType key)
 {
-  lcdscreen::keyPressed(eKeyA);
+  m_butList.append(butt);
+  m_keyList.append(key);
+  connect(butt,SIGNAL(pressed()),this,SLOT(buttonPressed()));
+  connect(butt,SIGNAL(released()),this,SLOT(buttonReleased()));
 }
-void RaspiLcdWidget::buttonBpressed()
+
+void RaspiLcdWidget::buttonPressed()
 {
-  lcdscreen::keyPressed(eKeyB);
+  QAbstractButton *src = (QAbstractButton*)sender();
+
+  for( int i=0; i<m_butList.count(); i++ )
+  {
+    if( m_butList[i]==src )
+    {
+      m_keyPressed = m_keyList[i];
+      lcdscreen::keyPressed(m_keyPressed);
+      break;
+    }
+  }
 }
-void RaspiLcdWidget::buttonCpressed()
+void RaspiLcdWidget::buttonReleased()
 {
-  lcdscreen::keyPressed(eKeyC);
-}
-void RaspiLcdWidget::buttonDpressed()
-{
-  lcdscreen::keyPressed(eKeyD);
-}
-void RaspiLcdWidget::buttonUppressed()
-{
-  lcdscreen::keyPressed(eKeyUp);
-}
-void RaspiLcdWidget::buttonDownpressed()
-{
-  lcdscreen::keyPressed(eKeyDown);
+  m_keyPressed = eKeyNone;
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -138,7 +159,7 @@ void Qt_printf(char *message)
   if( m_debug==NULL )
   {
     m_debug = new QTextEdit(0);
-    m_debug->setFont(QFont("Courier",8));
+    m_debug->setFont(QFont("Courier",10));
     m_debug->setWordWrapMode(QTextOption::NoWrap);
     m_debug->setReadOnly(true);
     m_debug->setPlainText("");

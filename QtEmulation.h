@@ -12,8 +12,10 @@
 #include "std_c.h"
 
 #ifdef __cplusplus
+#include "lcdscreen.h"
 #include <QApplication>
 #include <QWidget>
+#include <QAbstractButton>
 
 class RaspiLcdWidget : public QWidget
 {
@@ -24,19 +26,22 @@ public:
   virtual ~RaspiLcdWidget();
 
   QImage m_image;
+  keyType m_keyPressed;
 
 protected:
   virtual void paintEvent( QPaintEvent *event );
   virtual void timerEvent ( QTimerEvent * event );
   virtual void mouseDoubleClickEvent ( QMouseEvent * event );
 
+private:
+  void registerKey(QAbstractButton *butt, keyType key);
+
+  QList<QAbstractButton*> m_butList;
+  QList<keyType> m_keyList;
+
 private slots:
-  void buttonApressed();
-  void buttonBpressed();
-  void buttonCpressed();
-  void buttonDpressed();
-  void buttonUppressed();
-  void buttonDownpressed();
+  void buttonPressed();
+  void buttonReleased();
 };
 
 extern "C"
