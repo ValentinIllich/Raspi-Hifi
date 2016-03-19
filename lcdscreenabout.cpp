@@ -17,7 +17,7 @@
 #include "screenids.h"
 
 static objectinfo strings[] = {
-  { eText,true,   0,56,  0, 0,  0,"Back" },
+  { eText,true,   0,56,  0, 0,  0,"Cancel" },
   { eText,true,  50,56,  0, 0,  0,"Clock    Info" },
 
   { eNone,false, 0,0,0,0,  0,NULL },

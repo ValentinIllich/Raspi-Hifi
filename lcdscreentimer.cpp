@@ -31,7 +31,7 @@ static objectinfo strings[] = {
   { eText,true,   0,30,  0, 0,  0, "" },
   { eText,true,   0,40,  0, 0,  0, "" },
 
-  { eText,true,   0,56,  0, 0,  0," Back" },
+  { eText,true,   0,56,  0, 0,  0,"Cancel" },
   { eText,true,  50,56,  0, 0,  0,"" }, // Manu / Auto Display
   { eText,true, 100,56,  0, 0,  0,"" }, // Set / On/Off Display
   { eNone,false, 0,0,0,0,  0,NULL },

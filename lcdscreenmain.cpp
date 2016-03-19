@@ -21,23 +21,37 @@
 #include "screenids.h"
 
 #ifdef  QT_EMULATION
+
 int spawn (const char* /*program*/, const char** /*arg_list*/)
 {
-    return 0;
+    return 1234;
 }
+void writepipe(const char */*str*/)
+{
+}
+
 #else
-#include <sys/wait.h>
+
+int filedes[2];
 
 int spawn (const char* program, const char** arg_list)
 {
+  pipe(filedes);
+
   pid_t child_pid;
   /* Duplicate this process. */
   child_pid = fork ();
   if (child_pid != 0)
+  {
+    close(filedes[0]);
+
     /* This is the parent process. */
     return child_pid;
+  }
   else
   {
+    dup2(filedes[0], 0);
+
     /* Now execute PROGRAM, searching for it in the path. */
     execvp (program, (char**)arg_list);
     /* The execvp function returns only if an error occurs. */
@@ -45,6 +59,13 @@ int spawn (const char* program, const char** arg_list)
     _exit (-1);
   }
 }
+
+void writepipe(const char *str)
+{
+  // Write to child’s stdin
+  write(filedes[1], str, strlen(str));
+}
+
 #endif
 
 static objectinfo strings[] = {
@@ -60,10 +81,14 @@ static objectinfo strings[] = {
 
 static lcdscreenmain mainscreen;
 
+int outfd[2];
+int infd[2];
+
 lcdscreenmain::lcdscreenmain()
   : lcdscreen(strings)
   , m_recordId(-1)
   , m_playId(-1)
+  , m_playSuspended(false)
   , m_startTime(-1)
   , m_lastScreen(eNoAction)
 {
@@ -111,6 +136,8 @@ keyType lcdscreenmain::secTimerHandler(struct tm *result)
   }
   if( m_playId>=0 )
   {
+    if( m_playSuspended ) m_startTime++;
+
     if( !proc_exists(m_playId) )
     {
       myprintf("play no longer running: %d!\n",errno);
@@ -129,7 +156,7 @@ keyType lcdscreenmain::secTimerHandler(struct tm *result)
 
   if( lcdscreentimer::timerActive() )
   {
-    if( (ds%2)==0 )
+    if( (actTime%2)==0 )
       strings[2].visible=true;
     else
       strings[2].visible=false;
@@ -139,15 +166,17 @@ keyType lcdscreenmain::secTimerHandler(struct tm *result)
   {
     static char buffer[128];
 
-    if( (ds%2)==0 )
+    if( (actTime%2)==0 )
     {
       if( m_recordId>=0 ) strings[3].visible=true;
       if( m_playId>=0 ) strings[4].visible=true;
+      if( m_playSuspended ) strings[5].visible = true;
     }
     else
     {
       if( m_recordId>=0 ) strings[3].visible=false;
       if( m_playId>=0 ) strings[4].visible=false;
+      if( m_playSuspended ) strings[5].visible = false;
     }
 
     sprintf(buffer,"%02d:%02d:%02d",dh,dm,ds);
@@ -196,10 +225,20 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
     }
     break;
   case eKeyA:
-    if( lcdscreentimer::timerActive() || m_recordId>=0 || m_playId>=0 )
+    if( lcdscreentimer::timerActive() || m_recordId>=0 )
     {
       m_lastScreen = eNoShutdown;
       lcdscreen::activateScreen(POWER_DENIED);
+    }
+    else if( m_playId>=0 )
+    {
+      if( m_playSuspended ) strings[5].visible = true;
+      m_playSuspended = !m_playSuspended;
+      writepipe(" ");
+      if( m_playSuspended )
+        strings[1].text = "Cont            About";
+      else
+        strings[1].text = "Pause           About";
     }
     else
     {
@@ -210,7 +249,10 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
     }
     break;
   case eKeyB:
-    lcdscreen::activateScreen(TIMER_SCREEN);
+    if( m_playId>=0 )
+      writepipe(" ");
+    else
+      lcdscreen::activateScreen(TIMER_SCREEN);
     break;
   case eKeyC:
     lcdscreen::activateScreen(ABOUT_SCREEN);
@@ -294,11 +336,13 @@ void lcdscreenmain::startPlay(char *playfile)
   {
     time_t clock = time(NULL);
     struct tm *result = localtime(&clock);
-    const char *args[] = { "/usr/bin/aplay","-f", "cd", "-Dhw:1,0", "-r", "44100", playfile, NULL };
-    m_playId = spawn("/usr/bin/arecord",args);
+    const char *args[] = { "/usr/bin/aplay","-f", "cd", "-Dhw:1,0", "-r", "44100", "-i", playfile, NULL };
+    m_playId = spawn("/usr/bin/aplay",args);
     myprintf("play process id is %d\n",m_playId);
 
     m_startTime = lcdscreen::toTimeInSeconds(result);
+    strings[1].text = "Pause           About";
+    strings[4].text = "Stop";
     strings[5].text = "00:00:00";
     repaint();
   }
@@ -311,9 +355,14 @@ void lcdscreenmain::stopPlay()
 #ifndef  QT_EMULATION
     int ret = kill(m_playId,SIGTERM);
     printf("play process killed: %d\n",ret);
-    m_playId = -1;
+    close(filedes[1]);
 #endif
+    m_playId = -1;
+    m_playSuspended = false;
+    strings[1].text = "Power           About";
+    strings[4].text = "Play";
     strings[4].visible=true;
+    strings[5].visible = true;
     updateRemaining();
     repaint();
   }

@@ -26,7 +26,7 @@ static objectinfo strings[] = {
   { eText,true,118,  9,  0, 0,  0,"+" },
   { eText,true,118, 46,  0, 0,  0,"-" },
   { eText,true,   0,56,  0, 0,  0,"          >      Set" },
-  { eText,true,   0,56,  0, 0,  0," Back" },
+  { eText,true,   0,56,  0, 0,  0,"Cancel" },
   { eText,true,  54,56,  0, 0,  0,"" },
   { eNone,false, 0,0,0,0,  0,NULL },
 };
@@ -70,7 +70,7 @@ void lcdscreenedit::activatedHandler()
   //          strcpy(timerTextEdit,"26.03.15 10:05-10:07");
   }
   m_selectedPos = 0;
-  strings[3].text=" Back";
+  strings[3].text="Cancel";
 }
 
 keyType lcdscreenedit::keyEventHandler( keyType key )
@@ -84,7 +84,7 @@ keyType lcdscreenedit::keyEventHandler( keyType key )
     while( m_selectedPos>0 && m_timerTextEdit[m_selectedPos]==' ' )
       m_selectedPos--;
     if( m_selectedPos==0 )
-      strings[3].text=" Back";
+      strings[3].text="Cancel";
     repaint();
     }
     else

@@ -44,6 +44,7 @@ private:
 
   int m_recordId;
   int m_playId;
+  bool m_playSuspended;
 
   int m_startTime;
 

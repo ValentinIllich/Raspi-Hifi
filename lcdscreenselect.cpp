@@ -139,9 +139,9 @@ keyType lcdscreenselect::keyEventHandler( keyType key )
   case eKeyA:
     if( m_info )
     {
-      m_info = !m_info;
-      strings[0].visible = !m_info;
-      strings[1].visible = m_info;
+      m_info = false;
+      strings[0].visible = true;
+      strings[1].visible = false;
       repaint();
     }
     else
@@ -151,9 +151,14 @@ keyType lcdscreenselect::keyEventHandler( keyType key )
     }
     break;
   case eKeyB:
-    m_info = !m_info;
-    strings[0].visible = !m_info;
-    strings[1].visible = m_info;
+    if( m_info )
+      ;
+    else
+    {
+      m_info = true;
+      strings[0].visible = false;
+      strings[1].visible = true;
+    }
     repaint();
     break;
   case eKeyC:
@@ -183,6 +188,9 @@ keyType lcdscreenselect::keyEventHandler( keyType key )
       if( m_selIdx>=m_filecount ) m_selIdx=m_filecount-1;
       strcpy(m_selected,"");
       activatedHandler();
+      m_info = false;
+      strings[0].visible = true;
+      strings[1].visible = false;
       repaint();
     }
     break;
@@ -245,7 +253,7 @@ void lcdscreenselect::paintEvent()
     }
   }
 
-  sprintf(infoLine,"Back  %2d%%free  Delete",(m_total-m_used)*100/m_total);
+  sprintf(infoLine,"Cancel %2d%%free Delete",(m_total-m_used)*100/m_total);
 }
 
 void lcdscreenselect::cleanup()
