@@ -9,6 +9,7 @@
 #include "lcdscreenselect.h"
 #include "screenids.h"
 #include "lcdscreenmessages.h"
+#include "lcdscreenrename.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -25,6 +26,7 @@ static objectinfo strings[] = {
 static lcdscreenselect selectscreen;
 
 char lcdscreenselect::m_selected[1024];
+char lcdscreenselect::m_renamed[1024];
 
 lcdscreenselect::lcdscreenselect()
   : lcdscreen(strings)
@@ -34,6 +36,7 @@ lcdscreenselect::lcdscreenselect()
   , m_total(1)
   , m_used(1)
   , m_info(false)
+  , m_renaming(false)
 {
   strings[1].visible = false;
   lcdscreen::setupScreen(SELECT_SCREEN,&selectscreen,"selectScreen");
@@ -152,7 +155,12 @@ keyType lcdscreenselect::keyEventHandler( keyType key )
     break;
   case eKeyB:
     if( m_info )
-      ;
+    {
+      m_renaming = true;
+      lcdscreenRename *newName = (lcdscreenRename*)(getScreen(RENAME_SCREEN));
+      newName->setName(m_files[m_selIdx]);
+      lcdscreen::activateScreen(RENAME_SCREEN);
+    }
     else
     {
       m_info = true;
@@ -178,7 +186,23 @@ keyType lcdscreenselect::keyEventHandler( keyType key )
     }
     break;
   case eKeyCancel:
-    if( lcdscreenQuestion::YesClicked() )
+    if( m_renaming )
+    {
+      lcdscreenRename *newName = (lcdscreenRename*)(getScreen(RENAME_SCREEN));
+      if( newName->SetClicked() )
+      {
+        strcpy(m_selected,"/home/pi/usbstick/");
+        strcat(m_selected,m_files[m_selIdx]);
+        strcat(m_selected,".wav");
+        strcpy(m_renamed,"/home/pi/usbstick/");
+        strcat(m_renamed,newName->getNewName());
+        strcat(m_renamed,".wav");
+        rename(m_selected,m_renamed);
+        activatedHandler();
+        repaint();
+      }
+    }
+    else if( m_info && lcdscreenQuestion::YesClicked() )
     {
       strcpy(m_selected,"/home/pi/usbstick/");
       strcat(m_selected,m_files[m_selIdx]);

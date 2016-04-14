@@ -355,7 +355,7 @@ keyType lcdscreen::keyEvent( keyType key )
       }
       repaint();
     }
-    else
+    else if( keyEventHandler(key)==eKeyNone )
       setBacklightState(eToggle);
     break;
   case eKeyUp:

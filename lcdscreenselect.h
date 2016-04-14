@@ -42,8 +42,10 @@ private:
   int m_used;
 
   bool m_info;
+  bool m_renaming;
 
   static char m_selected[1024];
+  static char m_renamed[1024];
 };
 
 #endif // LCDSCREENSELECT_H

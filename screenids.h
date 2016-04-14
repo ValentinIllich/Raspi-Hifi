@@ -6,6 +6,7 @@
 #define ABOUT_SCREEN        2
 #define SELECT_SCREEN       3
 #define EDIT_SCREEN         4
+#define RENAME_SCREEN       9
 
 #define POWER_SCREEN        5
 #define POWER_DENIED        6
