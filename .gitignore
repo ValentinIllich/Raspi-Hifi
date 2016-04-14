@@ -10,3 +10,5 @@ Raspi-Hifi-V1.0.0.pro.*
 MacMakefile
 .sync.ffs_db
 Raspi-Hifi-Win7.pro.user
+
+*.user
