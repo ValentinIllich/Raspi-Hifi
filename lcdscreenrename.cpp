@@ -29,33 +29,32 @@
 #define COL4_SELECTED 9
 #define COL5_SELECTED 10
 #define COL6_SELECTED 11
-#define COL7_SELECTED 17
-#define COL8_SELECTED 18
-#define COL9_SELECTED 19
+#define COL7_SELECTED 16
+#define COL8_SELECTED 17
+#define COL9_SELECTED 18
 
 static int m_selected_row = ROW_NONE;
 static int m_selected_col = COL_NONE;
 
-const char *m_row1Up = ".123.....456.....789";
-const char *m_row2Up = ".0AB.....CDE.....FGH";
-const char *m_row3Up = ".IJK.....LMN.....OPQ";
-const char *m_row4Up = ".RST.....UVW.....XYZ";
+const char *m_row1Up = ".123.....456....789";
+const char *m_row2Up = ".0AB.....CDE....FGH";
+const char *m_row3Up = ".IJK.....LMN....OPQ";
+const char *m_row4Up = ".RST.....UVW....XYZ";
 
-const char *m_row1Low = ".- _.....   .....   ";
-const char *m_row2Low = "..ab.....cde.....fgh";
-const char *m_row3Low = ".ijk.....lmn.....opq";
-const char *m_row4Low = ".rst.....uvw.....xyz";
+const char *m_row1Low = ".- _.....   ....   ";
+const char *m_row2Low = "..ab.....cde....fgh";
+const char *m_row3Low = ".ijk.....lmn....opq";
+const char *m_row4Low = ".rst.....uvw....xyz";
 
 const char *m_row1 = m_row1Up;
 const char *m_row2 = m_row2Up;
 const char *m_row3 = m_row3Up;
 const char *m_row4 = m_row4Up;
 
-const char *m_sel1  = "                 1-9";
-const char *m_sel2  = "                 0-H";
-const char *m_sel3  = "                 I-Q";
-const char *m_sel4a = "Cancel   Set     R-Z";
-const char *m_sel4b = "Delete   Set     R-Z";
+const char *m_sel1  = "                    ";
+const char *m_sel2  = "             1-9/0-H";
+const char *m_sel3  = "             I-Q/R-Z";
+const char *m_sel4  = "Cancel   Set   Delete";
 
 static lcdscreenRename editscreen;
 
@@ -118,13 +117,7 @@ keyType lcdscreenRename::keyEventHandler( keyType key )
       m_startingSeconds = 0;
       break;
     default:
-      if( m_edit_col>0 )
-      {
-        m_edit_col--;
-        m_currentInput[m_edit_col] = 0x0;
-      }
-      else
-        return eKeyCancel;
+      return eKeyCancel;
       break;
     }
     repaint();
@@ -180,6 +173,11 @@ keyType lcdscreenRename::keyEventHandler( keyType key )
       m_startingSeconds = 0;
       break;
     default:
+      if( m_edit_col>0 )
+      {
+        m_edit_col--;
+        m_currentInput[m_edit_col] = 0x0;
+      }
       break;
     }
     repaint();
@@ -262,10 +260,7 @@ void lcdscreenRename::paintEvent()
     LCD_PrintXY(0, 2,m_sel1);
     LCD_PrintXY(0,12,m_sel2);
     LCD_PrintXY(0,45,m_sel3);
-    if( m_edit_col==0 )
-      LCD_PrintXY(0,55,m_sel4a);
-    else
-      LCD_PrintXY(0,55,m_sel4b);
+    LCD_PrintXY(0,55,m_sel4);
     break;
   default:
     LCD_PrintXY(0, 2,m_row1);
@@ -298,9 +293,17 @@ void lcdscreenRename::paintEvent()
   switch( m_selected_col )
   {
   case COL_NONE:
+    if( m_selected_row!=ROW_NONE )
+    {
+/*      LCD_SetPenColor(1);
+      LCD_DrawEllipse(20,20,5,5);*/
+      LCD_PrintXY(20*6,45,"A");
+      LCD_PrintXY(20*6,55,"a");
+    }
     break;
   default:
     x = m_selected_col*6; dx = 6;
+    LCD_PrintXY(20*6,55,"*");
     break;
   }
 
@@ -330,7 +333,7 @@ keyType lcdscreenRename::secTimerHandler(struct tm *result)
 
   int actualTime = lcdscreen::toTimeInSeconds(result);
 
-  if( (m_startingSeconds>=0) && ((actualTime-m_startingSeconds)>10) )
+  if( (m_startingSeconds>=0) && ((actualTime-m_startingSeconds)>5) )
   {
     m_selected_row = ROW_NONE;
     m_selected_col = COL_NONE;

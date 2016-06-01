@@ -27,7 +27,8 @@ HEADERS += bcm2835.h \
     lcdscreentimer.h \
     lcdscreenselect.h \
     lcdscreenmessages.h \
-    lcdscreenedit.h
+    lcdscreenedit.h \
+    lcdscreenrename.h
 SOURCES += bcm2835.c lcd.c raspilcd.c \
            main.cpp \
     lcdscreen.cpp \
@@ -37,7 +38,8 @@ SOURCES += bcm2835.c lcd.c raspilcd.c \
     lcdscreentimer.cpp \
     lcdscreenselect.cpp \
     lcdscreenmessages.cpp \
-    lcdscreenedit.cpp
+    lcdscreenedit.cpp \
+    lcdscreenrename.cpp
 
 target.path = install
 target.files = *.pro Makefile *.h *.c *.cpp *.inc
