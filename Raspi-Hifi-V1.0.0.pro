@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = 
+TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 LIBS += -lrt
@@ -28,7 +28,8 @@ HEADERS += bcm2835.h \
     lcdscreenselect.h \
     lcdscreenmessages.h \
     lcdscreenedit.h \
-    lcdscreenrename.h
+    lcdscreenrename.h \
+    version.h
 SOURCES += bcm2835.c lcd.c raspilcd.c \
            main.cpp \
     lcdscreen.cpp \
@@ -39,11 +40,23 @@ SOURCES += bcm2835.c lcd.c raspilcd.c \
     lcdscreenselect.cpp \
     lcdscreenmessages.cpp \
     lcdscreenedit.cpp \
-    lcdscreenrename.cpp
+    lcdscreenrename.cpp \
 
 target.path = install
 target.files = *.pro Makefile *.h *.c *.cpp *.inc
 INSTALLS += target
+
+linux-g++{
+    TARGET = ../crosscompile/Raspi_Hifi-V1
+    QT =
+    QMAKE_CC = ../crosscompile/a.out
+    QMAKE_CXX = ../crosscompile/a.out
+    QMAKE_LINK = ../crosscompile/a.out
+    QMAKE_INCDIR =
+    QMAKE_INCDIR_QT =
+    OBJECTS_DIR = ../crosscompile
+#    LIBS += -lrt
+}
 
 macx|win32{
     DEFINES += QT_EMULATION

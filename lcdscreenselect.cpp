@@ -197,24 +197,27 @@ keyType lcdscreenselect::keyEventHandler( keyType key )
         strcpy(m_renamed,"/home/pi/usbstick/");
         strcat(m_renamed,newName->getNewName());
         strcat(m_renamed,".wav");
+        myprintf("renaming %s to %s\n",m_selected,m_renamed);
         rename(m_selected,m_renamed);
         activatedHandler();
         repaint();
       }
+      m_renaming = false;
     }
     else if( m_info && lcdscreenQuestion::YesClicked() )
     {
       strcpy(m_selected,"/home/pi/usbstick/");
       strcat(m_selected,m_files[m_selIdx]);
       strcat(m_selected,".wav");
+      myprintf("deleting %s\n",m_selected);
       if( remove(m_selected)==0 )
         m_filecount--;
       if( m_selIdx>=m_filecount ) m_selIdx=m_filecount-1;
       strcpy(m_selected,"");
       activatedHandler();
-      m_info = false;
-      strings[0].visible = true;
-      strings[1].visible = false;
+      //m_info = false;
+      //strings[0].visible = true;
+      //strings[1].visible = false;
       repaint();
     }
     break;

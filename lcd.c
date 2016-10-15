@@ -491,22 +491,22 @@ void LCD_Init(void)
   LCD_RST_SET;
   SleepMs(200);		// Wait ~ 200ms
 
-  lcd_write_cmd(0xE2);
-  lcd_write_cmd(0x40);
-  lcd_write_cmd(0xA1);
-  lcd_write_cmd(0xC0);
-  lcd_write_cmd(0xA4);
-  lcd_write_cmd(0xA6);
-  lcd_write_cmd(0xA2);
-  lcd_write_cmd(0x2F);
-  lcd_write_cmd(0x27);
+  lcd_write_cmd(0xE2); // reset
+  lcd_write_cmd(0x40); // operating mode
+  lcd_write_cmd(0xA1); // RAM addr SEG reverse (gespiegelt)
+  lcd_write_cmd(0xC0); // scan direction
+  lcd_write_cmd(0xA4); // normal display
+  lcd_write_cmd(0xA6); // LDC normal
+  lcd_write_cmd(0xA2); // LCD voltage 1/9 bias
+  lcd_write_cmd(0x2F); // power control
+  lcd_write_cmd(0x27); // resistor ratio Rb/Ra
 
-  lcd_write_cmd(0x81);
-  lcd_write_cmd(6);
+  lcd_write_cmd(0x81); // contrast (?) elektrisch
+  lcd_write_cmd(6);    // contrast wert
 
   lcd_write_cmd(0xFA);
   lcd_write_cmd(0x90);
-  lcd_write_cmd(0xAF);
+  lcd_write_cmd(0xAF); // display on
 
   LCD_ClearScreen();
   LCD_WriteFramebuffer();
