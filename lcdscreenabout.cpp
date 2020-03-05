@@ -104,10 +104,12 @@ keyType lcdscreenabout::keyEventHandler( keyType key )
   case eKeyUp:
     if( m_contrast < 20 ) m_contrast++;
     LCD_SetContrast(m_contrast);
+    m_seconds = 0;
     break;
   case eKeyDown:
     if( m_contrast > 0 ) m_contrast--;
     LCD_SetContrast(m_contrast);
+    m_seconds = 0;
     break;
   default:
     break;
