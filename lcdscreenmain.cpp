@@ -232,13 +232,13 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
     }
     else if( m_playId>=0 )
     {
-      if( m_playSuspended ) strings[5].visible = true;
-      m_playSuspended = !m_playSuspended;
-      writepipe(" ");
-      if( m_playSuspended )
-        strings[1].text = "Cont            About";
-      else
-        strings[1].text = "Pause           About";
+      m_startTime += 10;
+      time_t clock = time(NULL);
+      struct tm *result = localtime(&clock);
+      int actTime = lcdscreen::toTimeInSeconds(result);
+      if( m_startTime>actTime ) m_startTime = actTime;
+      writepipe("<");
+      repaint();
     }
     else
     {
@@ -250,12 +250,29 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
     break;
   case eKeyB:
     if( m_playId>=0 )
+    {
+      if( m_playSuspended ) strings[5].visible = true;
+      m_playSuspended = !m_playSuspended;
       writepipe(" ");
+      if( m_playSuspended )
+        //strings[1].text = "Cont            About";
+        strings[1].text = "-10 s   Cont    +10 s";
+      else
+        //strings[1].text = "Pause           About";
+        strings[1].text = "-10 s   Pause   +10 s";
+    }
     else
       lcdscreen::activateScreen(TIMER_SCREEN);
     break;
   case eKeyC:
-    lcdscreen::activateScreen(ABOUT_SCREEN);
+    if( m_playId>=0 )
+    {
+      m_startTime -= 10;
+      writepipe(">");
+      repaint();
+    }
+    else
+      lcdscreen::activateScreen(ABOUT_SCREEN);
     break;
   case eKeyCancel:
     switch( m_lastScreen )
@@ -285,7 +302,9 @@ keyType lcdscreenmain::keyEventHandler( keyType key )
     break;
   }
 
-  myprintf("mainscreen returning %s\n",lcdscreen::keyToString(ret));
+  if( ret!=eKeyNone )
+    myprintf("mainscreen returning %s\n",lcdscreen::keyToString(ret));
+
   return ret;
 }
 
@@ -341,7 +360,9 @@ void lcdscreenmain::startPlay(char *playfile)
     myprintf("play process id is %d\n",m_playId);
 
     m_startTime = lcdscreen::toTimeInSeconds(result);
-    strings[1].text = "Pause           About";
+    //strings[1].text = "Pause           About";
+    strings[1].text = "-10 s   Pause   +10 s";
+    strings[2].visible=false;
     strings[4].text = "Stop";
     strings[5].text = "00:00:00";
     repaint();
@@ -361,6 +382,7 @@ void lcdscreenmain::stopPlay()
     m_playSuspended = false;
     strings[1].text = "Power           About";
     strings[4].text = "Play";
+    strings[2].visible=true;
     strings[4].visible=true;
     strings[5].visible = true;
     updateRemaining();
