@@ -14,3 +14,4 @@ Raspi-Hifi-Win7.pro.user
 *.user
 /Raspi-Hifi-V1.2.0.app/
 /Raspi-Hifi-V1.2.0.app.dSYM/
+/.qmake.stash
